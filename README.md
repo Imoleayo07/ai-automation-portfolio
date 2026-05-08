@@ -25,12 +25,12 @@ A retrieval-augmented generation pipeline that indexes a PDF textbook and answer
 A browser-based interactive math tutor built through system prompt engineering. Designed to be encouraging and step-by-step in its explanations.
 
 ## Tech Stack
-- **Automation:** n8n Cloud
-- **LLM:** Groq API (Llama 3.3 70b-versatile)
+- **Automation:** n8n Cloud, Make.com, Zapier
+- **LLM:** Groq API (Llama 3.3 70b-versatile), Claude, OpenAI, Deepseek
 - **Databases:** Airtable, Supabase, Google Sheets
-- **Notifications:** Gmail, Telegram
+- **Notifications:** Gmail, Telegram, Whatsapp
 - **Publishing:** LinkedIn API via Make.com
 
 ## About
-Built as part of the TsAcademy Phoenix Cohort, 2026S  
+Built as part of the TsAcademy Phoenix Cohort, 2026  
 Connect with me on [LinkedIn](https://www.linkedin.com/akogun-imoleayo-583a54278)
