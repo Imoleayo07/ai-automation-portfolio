@@ -1,0 +1,392 @@
+{
+  "name": "Linkedin ai post generator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1,3,5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        144
+      ],
+      "id": "49f646b9-9b82-447c-b00f-b7c9d9b63f8d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "imoleayoakogun@gmail.com",
+        "subject": "Approval Required",
+        "message": "=Your LinkedIn post is ready for review: {{ $json.cleanedPost }}\n\nIf you want to skip this post, just ignore this email.",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        144
+      ],
+      "id": "2b9069b0-e3d3-4f84-b893-21c1f8d1c114",
+      "name": "Send message and wait for response",
+      "webhookId": "de8e631f-0a59-4af7-8842-d1a8c9585fec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1CcvBSBCTTlTlnCoGo9ae3aoGPr4AC1_sgBxCLg_xZtE",
+          "mode": "list",
+          "cachedResultName": "Ai topics for linkedin post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CcvBSBCTTlTlnCoGo9ae3aoGPr4AC1_sgBxCLg_xZtE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CcvBSBCTTlTlnCoGo9ae3aoGPr4AC1_sgBxCLg_xZtE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Topics": "={{ $('Get row(s) in sheet').item.json.Topics }}",
+            "Theme": "",
+            "Status": "Published"
+          },
+          "matchingColumns": [
+            "Topics"
+          ],
+          "schema": [
+            {
+              "id": "Topics",
+              "displayName": "Topics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Theme",
+              "displayName": "Theme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1472,
+        144
+      ],
+      "id": "02bb699c-872d-462e-a20a-d42eaa0ca173",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CcvBSBCTTlTlnCoGo9ae3aoGPr4AC1_sgBxCLg_xZtE",
+          "mode": "list",
+          "cachedResultName": "Ai topics for linkedin post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CcvBSBCTTlTlnCoGo9ae3aoGPr4AC1_sgBxCLg_xZtE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CcvBSBCTTlTlnCoGo9ae3aoGPr4AC1_sgBxCLg_xZtE/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        144
+      ],
+      "id": "143b6c4a-d870-451a-af98-8ba4ba76d1c8",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get raw text from Basic LLM Chain\nlet rawText = $input.first().json.text;\n\n// Safety check\nif (!rawText) {\n  throw new Error(\"No text returned — check Basic LLM Chain output\");\n}\n\n// Step 1: Convert literal \\n into real line breaks\nlet cleaned = rawText.replace(/\\\\n/g, '\\n');\n\n// Step 2: Remove backslash-quote\ncleaned = cleaned.replace(/\\\\\"/g, '\"');\n\n// Step 3: Remove double backslashes\ncleaned = cleaned.replace(/\\\\\\\\/g, '');\n\n// Step 4: Remove forward slashes\ncleaned = cleaned.replace(/\\//g, '');\n\n// Step 5: Remove all asterisks\ncleaned = cleaned.replace(/\\*/g, '');\n\n// Step 6: Remove curly brackets { }\ncleaned = cleaned.replace(/[{}]/g, '');\n\n// Step 7: Remove markdown links, keep display text\ncleaned = cleaned.replace(/\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1');\n\n// Step 8: Remove leftover square brackets\ncleaned = cleaned.replace(/[\\[\\]]/g, '');\n\n// Step 9: Remove hash symbols used as headers\ncleaned = cleaned.replace(/^#+\\s/gm, '');\n\n// Step 10: Remove dash bullet points at start of lines\ncleaned = cleaned.replace(/^[-•]\\s/gm, '');\n\n// Step 11: Remove double dashes\ncleaned = cleaned.replace(/--/g, '');\n\n// Step 12: Fix common grammatical spacing issues\n// Double spaces → single space\ncleaned = cleaned.replace(/ {2,}/g, ' ');\n// Space before punctuation → no space\ncleaned = cleaned.replace(/ ([.,!?;:])/g, '$1');\n// No space after punctuation → add space\ncleaned = cleaned.replace(/([.,!?;:])([^\\s\\n])/g, '$1 $2');\n\n// Step 13: Remove more than 2 consecutive blank lines\ncleaned = cleaned.replace(/\\n{3,}/g, '\\n\\n');\n\n// Step 14: Trim leading and trailing whitespace\ncleaned = cleaned.trim();\n\n// Safety cap at 3000 characters\nif (cleaned.length > 3000) {\n  cleaned = cleaned.substring(0, 2950) + '...';\n}\n\nreturn [{ json: { cleanedPost: cleaned } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        144
+      ],
+      "id": "f61e714e-6456-4835-b5a7-d648aea7f4d5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "5799458509",
+        "text": "Your linkedin post has been sent. Check it for errors and possible editing",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        144
+      ],
+      "id": "643892c8-1f90-4104-a353-048a15d1193b",
+      "name": "Send a text message",
+      "webhookId": "1810bb51-2027-4399-bb7a-fecc77c30860",
+      "credentials": {
+        "telegramApi": {
+          "id": "gYtLq17jFENkDyYk",
+          "name": "Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hook.eu1.make.com/i9xbkjsu1ziv778htf87vrqpxr3thnsb",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=message",
+              "value": "={   \"content\": \"{{ $('Code in JavaScript').item.json.cleanedPost }}\" }"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1248,
+        144
+      ],
+      "id": "184615a0-3b3d-406f-a7f0-bbcc35f921d8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a LinkedIn post about the following:\n\nTopic: {{ $('Get row(s) in sheet').item.json.Topics }}\nTheme: {{ $('Get row(s) in sheet').item.json.Theme }}\n\nThe post must:\n- Open with a bold first line that stops the scroll\n- Be between 150 and 250 words\n- Use short paragraphs with one blank line between each\n- End with a genuine question that invites comments\n- Include 3 to 5 relevant hashtags on the last line\n\nReturn only the post. No introduction. No explanation.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a professional LinkedIn content writer specialising in AI, technology and professional development.   Your job is to write LinkedIn posts that feel human, conversational and thought-provoking.  Follow these rules strictly: - Never use asterisks, bullet points, dashes or markdown formatting - Never use curly brackets, square brackets or forward slashes - Write in plain flowing text with short paragraphs - Each paragraph should be 1 to 2 sentences maximum - Do not use headers or numbered lists - Do not add any preamble or explanation before the post - Return only the post text, nothing else"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        448,
+        160
+      ],
+      "id": "d24a4a20-d642-4678-93a1-5ce04696838c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-chat-v3-0324",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        384,
+        368
+      ],
+      "id": "b7aabef1-7ec9-4e4a-9f27-2fecb6e57fb9",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aiSiivFG52ESYntD",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d6132152-91f6-4ba8-aaa6-d15bf6aeb97e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "lRZUd1jKnIjrzorM",
+  "tags": []
+}
