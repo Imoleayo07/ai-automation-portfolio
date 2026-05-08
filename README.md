@@ -32,5 +32,5 @@ A browser-based interactive math tutor built through system prompt engineering. 
 - **Publishing:** LinkedIn API via Make.com
 
 ## About
-Built as part of the Data Science Nigeria (DSN) 3MTT DeepTech Ready program.  
+Built as part of the TsAcademy Phoenix Cohort, 2026S  
 Connect with me on [LinkedIn](https://www.linkedin.com/akogun-imoleayo-583a54278)
