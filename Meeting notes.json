@@ -1,0 +1,195 @@
+{
+  "name": "Meeting notes",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d61f44ca-9d35-46bc-bd83-41e3bbdeb888",
+        "options": {
+          "binaryPropertyName": "transcript"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        0
+      ],
+      "id": "66e592cd-ee3b-4d4f-b1ae-92a6af6edbbb",
+      "name": "Webhook",
+      "webhookId": "d61f44ca-9d35-46bc-bd83-41e3bbdeb888"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        0
+      ],
+      "id": "83021bb8-73ae-48b9-9ee4-36a6d986ede6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "HZjbW90iQGml4uf8",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f208d0ae-4a72-45a5-beac-06bc48396aae",
+              "name": "body.name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "615babff-e4ef-4766-a3c9-9be49c238f32",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "You are an expert executive assistant. Convert meeting transcripts into structured notes with:\n- Summary\n- Key Points\n- Risks\n- Action Items\n- Next Steps\nFounder (Ada): Thank you for joining today. We’re building a platform that connects diagnostic labs to patients and hospitals in real time.\n\nInvestor (Mr. Bello): Interesting. What problem are you solving specifically?\n\nAda: In Nigeria, lab results are often delayed and fragmented. Patients wait days, and hospitals struggle to track records. We centralize lab data and provide instant access.\n\nCo-founder (Tunde): We’ve onboarded 25 labs so far and processed over 10,000 test results in the last 6 months.\n\nInvestor: What’s your revenue model?\n\nAda: We charge labs a subscription fee and take a small transaction fee per test processed.\n\nInvestor: And your current traction in terms of revenue?\n\nTunde: We’re currently at $8,000 MRR, growing at 15% month-over-month.\n\nInvestor: That’s solid. What are you raising?\n\nAda: We’re raising $500,000 for 15% equity to expand into three more states and improve infrastructure.\n\nInvestor: What are your biggest risks?\n\nAda: Regulatory compliance and onboarding traditional labs. We’re addressing this through partnerships with health associations.\n\nInvestor: Alright. I’d like to review your financials and user retention metrics.\n\nAda: We’ll send that over by Friday.\n\nInvestor: Great. Let’s schedule a follow-up next week.\n\nAda: Sounds good. Thank you."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "9ac24adb-eb29-492d-a741-17c97a25d1dc",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "HZjbW90iQGml4uf8",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "popoolablessing.48@gmail.com",
+        "subject": "Meeting Notes Summary",
+        "emailType": "text",
+        "message": "=Here is the summary for our meeting with the investors\n{{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "696cf9c5-6e6e-41da-a873-e2d91d40a92b",
+      "name": "Send a message",
+      "webhookId": "3d5b9398-5c6e-4745-b8f5-955c98648df8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "got this done, so happy."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "9990b66b-5b51-4552-9a67-9340286961e2",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9f256ef8-ae2a-4bdd-94a0-792d629897a8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "6ODaIWGy6jKFNsup",
+  "tags": []
+}

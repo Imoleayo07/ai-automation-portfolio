@@ -1,0 +1,304 @@
+{
+  "name": "Lead Capture workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Leads",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name"
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Email ",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Service Interested In",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Consultations"
+                  },
+                  {
+                    "option": "Customer Support"
+                  },
+                  {
+                    "option": "Sales"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6b7875b2-8e55-498c-b64c-ca9997acbe39",
+      "name": "On form submission",
+      "webhookId": "7605af87-15b7-404c-87b8-f59230aca815"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07382ca4-f80c-4d17-924d-f597d68c995a",
+              "name": "=Last Name",
+              "value": "={{ $json['Full Name'].split(' ')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "0be9ccfb-8daa-4394-8bca-1c729dcbddd0",
+              "name": "First Name",
+              "value": "={{ $json['Full Name'].split(' ')[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1eb43dc7-1534-4c69-8652-b978aa2f0842",
+      "name": "Full Name separated"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Full Name": "={{ $('On form submission').item.json['Full Name'] }}",
+            "First Name": "={{ $json['First Name'] }}",
+            "Last Name": "={{ $json['Last Name'] }}",
+            "Phone number": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Email": "={{ $('On form submission').item.json['Email '] }}",
+            "Service interested in": "={{ $('On form submission').item.json['Service Interested In'] }}"
+          },
+          "matchingColumns": [
+            "Timestamp"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone number",
+              "displayName": "Phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service interested in",
+              "displayName": "Service interested in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        -176
+      ],
+      "id": "f99cdade-9f18-42b6-a946-7b22cdc700c3",
+      "name": "Update sheet, plus timestamp added",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d3bf326-c38e-4884-9fd3-95aa34c55cc1",
+              "leftValue": "={{ $('On form submission').item.json['Phone Number'] }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "4b9c12f4-218b-465c-b7a4-ac5ee9e642ed",
+              "leftValue": "={{ $('On form submission').item.json['Phone Number'] }}",
+              "rightValue": null,
+              "operator": {
+                "type": "number",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "dcb86574-bbca-42e0-b3fe-7d041f586bef",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Full Name separated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Full Name separated": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update sheet, plus timestamp added": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update sheet, plus timestamp added",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cae46f80-7a0b-442d-bf9b-459fefcd96cd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "ITWEHRsZSnxSCo14",
+  "tags": []
+}

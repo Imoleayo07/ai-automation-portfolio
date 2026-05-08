@@ -1,0 +1,2390 @@
+{
+  "name": "Email Reply Detection and Smart Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "Subject: Re:"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2128,
+        -368
+      ],
+      "id": "d3fa906a-7d83-4b5e-8143-761cea81b8e6",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e44fdfc-268d-4497-b2ca-2b727722387b",
+              "name": "sender_email",
+              "value": "={{ $json.From.split('<')[1].replace('>', '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "b2269e51-04b3-4e51-a90b-05b21d87a273",
+              "name": "reply_content",
+              "value": "={{ $json.snippet.split(/On \\w+,/)[0].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "a99ff35c-58ea-42ca-9c1a-076a012e32cd",
+              "name": "reply_subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "f57aeb2c-9d35-4e41-809c-cfefd9782fab",
+              "name": "reply_timestamp",
+              "value": "={{ $now }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1904,
+        -368
+      ],
+      "id": "46270aee-dc08-48da-a343-adef5aca7430",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2060066331,
+          "mode": "list",
+          "cachedResultName": "Sheet 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=2060066331"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "={{ $json.sender_email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1680,
+        -368
+      ],
+      "id": "695d3fff-6fca-49c8-bd11-ff6addb1b0c7",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2060066331,
+          "mode": "list",
+          "cachedResultName": "Sheet 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=2060066331"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Responded",
+            "Follow up needed": "No",
+            "Email": "={{ $('Edit Fields').item.json.sender_email }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone number",
+              "displayName": "Phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service interested in",
+              "displayName": "Service interested in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Response Sent",
+              "displayName": "Response Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up needed",
+              "displayName": "Follow up needed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created at",
+              "displayName": "Created at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up sent at",
+              "displayName": "Follow up sent at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last contact",
+              "displayName": "Last contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Conversation Status",
+              "displayName": "Conversation Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Booking Intent",
+              "displayName": "Booking Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Appointment Time",
+              "displayName": "Appointment Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1456,
+        -368
+      ],
+      "id": "4ca7ae15-07c5-4b89-ae1f-9cdf231c91e9",
+      "name": "Update row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "phoneNumber": "2347081631744",
+        "message": "=New Reply Received! \nName: {{ $('Get row(s) in sheet').item.json['Full Name'] }}\nService:{{ $('Get row(s) in sheet').item.json['Service interested in'] }}\nEmail:{{ $json.Email }}\nMessage:{{ $('Edit Fields').item.json.reply_content }}\nTime:{{ $('Edit Fields').item.json.reply_timestamp }}"
+      },
+      "type": "n8n-nodes-syncmate.whatsAuto",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        -464
+      ],
+      "id": "d5db7550-c9ad-4a3a-9270-ec25a0abf40b",
+      "name": "Send a notification",
+      "alwaysOutputData": true,
+      "credentials": {
+        "assistroTokenApi": {
+          "id": "C0DuxtHmcQetIoDJ",
+          "name": "Assistro Token account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1744,
+        464
+      ],
+      "id": "a8d9ee95-f623-4568-aeb7-48294373bf4f",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 531734079,
+          "mode": "list",
+          "cachedResultName": "Error Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=531734079"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Workflow": "Assignment 4",
+            "Error Message": "={{ $json.execution.error.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error Message",
+              "displayName": "Error Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Email",
+              "displayName": "Lead Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1520,
+        464
+      ],
+      "id": "17aed773-a66a-444a-9031-74123b5714d7",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "imoleayoakogun@gmail.com",
+        "subject": "Workflow Error — Assignment 4",
+        "message": "=Something went wrong in your Assignment 4 workflow. Error: {{ $json['Error Message'] }}\nTime: {{ $now }} Please check your n8n execution log and Error Log sheet for details.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1296,
+        464
+      ],
+      "id": "6a8b08f2-0c23-4988-b869-42d04d5ff4fa",
+      "name": "Send a message",
+      "webhookId": "7aee8be3-0e60-4eab-9cba-962183f6a975",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 257337523,
+          "mode": "list",
+          "cachedResultName": "Chat History NEW",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=257337523"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "lead_email",
+              "lookupValue": "={{ $('Edit Fields').first().json.sender_email.toLowerCase().trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1232,
+        -272
+      ],
+      "id": "1f21da05-1123-47e7-bab8-42d62025e6e9",
+      "name": "Get row(s) in sheet1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "debe9f60-765b-48c1-85e0-4020163e0c61",
+              "leftValue": "={{ Object.keys($input.first().json).length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1008,
+        -272
+      ],
+      "id": "a64cbb2e-0ac6-4be8-a6c3-e436e6b63f26",
+      "name": "If",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allMessages = $input.all();\nconst last10 = allMessages.slice(-10).map(item => ({ json: item.json }));\nreturn last10;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        -368
+      ],
+      "id": "29e37c22-3ba0-4249-a91c-335891561eae",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8442d1c2-d804-41a4-86eb-5a69cf87c075",
+              "name": "chat_history",
+              "value": "'''",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        -176
+      ],
+      "id": "3526ebdb-cc83-4020-ae4d-a0dd440add12",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -560,
+        -272
+      ],
+      "id": "629d1f37-b81f-4fb4-af4b-7db2fb421b3d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allMessages = $input.all(); const chatHistory = allMessages .filter(msg=>\nmsg.json.sender !== undefined) .map(msg => msg.json.sender + ':'  +\nmsg.json.message_content) \n.join('\\n'); return [{ json: { chat_history:\nchatHistory } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -272
+      ],
+      "id": "47deed42-0c4e-4983-bf63-8c72eb170750",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b66a68e9-79c9-48cf-b7c5-a5caea52f839",
+              "name": "first_name",
+              "value": "={{$('Get row(s) in sheet').first().json['First Name']}}",
+              "type": "string"
+            },
+            {
+              "id": "d322de07-1275-446a-8808-184dcc3a6b69",
+              "name": "last_name",
+              "value": "={{$('Get row(s) in sheet').first().json['Last Name']}}",
+              "type": "string"
+            },
+            {
+              "id": "4cc1e08f-b2cf-45fd-9fdf-e160a952f37a",
+              "name": "email",
+              "value": "={{$('Get row(s) in sheet').first().json.Email}}",
+              "type": "string"
+            },
+            {
+              "id": "51151b2f-fdf3-4f1a-976f-0c2bfc583e74",
+              "name": "service",
+              "value": "={{$('Get row(s) in sheet').first().json['Service interested in']}}",
+              "type": "string"
+            },
+            {
+              "id": "ceb0dad7-13f7-4975-854f-729eaafcc391",
+              "name": "sender_email",
+              "value": "={{ $('Edit Fields').item.json.sender_email }}",
+              "type": "string"
+            },
+            {
+              "id": "3ef97759-18e7-4d52-8108-8c11c6af1848",
+              "name": "reply_content",
+              "value": "={{ $('Edit Fields').item.json.reply_content }}",
+              "type": "string"
+            },
+            {
+              "id": "e9a46bca-7f91-4dda-bfcf-60194c4aae92",
+              "name": "reply_subject",
+              "value": "={{ $('Edit Fields').item.json.reply_subject }}",
+              "type": "string"
+            },
+            {
+              "id": "f467dfd7-7060-4a2c-a020-d7fbe0b03b88",
+              "name": "chat_history",
+              "value": "={{ $json.chat_history }}",
+              "type": "string"
+            },
+            {
+              "id": "64ee92b9-df60-4914-9ac7-bb9680440f1b",
+              "name": "service_context",
+              "value": "={{$('Get row(s) in sheet').first().json['Service interested in']}}---'Chat with Customer Agent?' 'The customer has not selected a sspecific service yet. Help them find the right service based on the business context provided': 'The customer has selected the followin service: ' + {{$('Get row(s) in sheet').first().json['Service interested in']}}",
+              "type": "string"
+            },
+            {
+              "id": "71a800c4-6a5a-4ae8-8347-32ecddf5206f",
+              "name": "Business_context",
+              "value": "Light wears a professional atelier specialized in all forms of clothing, from corporate wear to sleepwear. Corporate wear: male suit, 50,000. Female suit: 40,000. Casuals: Based on pieces selected. BRIDAL AND GROOM'S WEAR: CONSULTATION BASED. Sleepwear—20,000 FOR ALL TYPES.\nTo book an appointment, reply with what service you would prefer and your budget, time, and date for visiting the store, and we will confirm within 24 hrs. Contact: 07081631744.\nemail: imoleayoakogun@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        -272
+      ],
+      "id": "9616ef9f-22e9-486b-88db-dffb4be10b9d",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.reply_content }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a helpful customer service agent for TS Academy, an automation training business. {{ $json.service_context }} Your job is to: 1. Answer customer questions about our services using the business context provided below 2. Help customers book appointments by collecting their preferred date and time 3. If the customer wants to book — include exactly this tag in your response: [BOOKING DETECTED] 4. If the customer mentions a date and time for their appointment, include these tags: [APPOINTMENT DATE: the date they mentioned] [APPOINTMENT TIME: the time they mentioned] 5. At the end of every response include exactly one of these sentiment tags: [SENTIMENT: positive] [SENTIMENT: neutral] [SENTIMENT: frustrated] [SENTIMENT: urgent] 6. If you cannot answer a question — include exactly this tag: [ESCALATE] 7. Always be professional, warm, and concise 8. Never mention these tags to the customer  — they are for internal use only Business Context: {{ $json.Business_context }} Previous Conversation: {{ $json.chat_history }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        112,
+        -272
+      ],
+      "id": "efae1cf6-9349-41a5-9580-738dc0b0d94c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-chat-v3.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -48
+      ],
+      "id": "28669a6f-e8ec-4797-b0cb-aea785abb723",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aiSiivFG52ESYntD",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35a7b964-7596-4620-b1ad-d6ab16eb7b7d",
+              "name": "ai_response",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "8d9e13f2-ee73-448b-9f27-996c31e05c7a",
+              "name": "booking_detected",
+              "value": "={{$json.text.includes('[BOOKING DETECTED]') ? 'yes' :'no' }}",
+              "type": "string"
+            },
+            {
+              "id": "00dd469f-e331-47eb-8ae3-938900d7f222",
+              "name": "escalation_needed",
+              "value": "={{$json.text.includes('[ESCALATE]') ?'yes' : 'no'}}",
+              "type": "string"
+            },
+            {
+              "id": "e19a6008-4d91-4975-8df4-af4030897dbb",
+              "name": "sentiment",
+              "value": "={{$json.text.match(/\\[SENTIMENT: (.*?)\\]/)?.[1] ??\n'neutral' }}",
+              "type": "string"
+            },
+            {
+              "id": "43f1967f-6dcc-40a3-ba84-7f9b3b07531e",
+              "name": "appointment_date",
+              "value": "={{$json.text.match(/\\[APPOINTMENT DATE:(.*?)\\]/)?.[1] ??''}}",
+              "type": "string"
+            },
+            {
+              "id": "b6028271-b7b9-42d4-a174-68aff20dc324",
+              "name": "appointment_time",
+              "value": "={{ $json.text.match(/\\[APPOINTMENT TIME: (.*?)\\]/)?.[1] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "7dbd1de2-b6df-489b-b1bd-5c9707687f69",
+              "name": "clean_response",
+              "value": "={{ $json.text.replace('[BOOKING DETECTED]','').replace('[ESCALATE]', '').replace(/\\[SENTIMENT:.*?\\]/g, '').replace(/\\[APPOINTMENT DATE:.*?\\]/g, '').replace(/\\[APPOINTMENT TIME:.*?\\]/g, '').trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -272
+      ],
+      "id": "b81c3edf-f47d-4407-8a4d-ceb99b408c61",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "22d3e793-0245-4cee-9131-42dbf6a82a85",
+              "leftValue": "={{ $json.clean_response !== undefined && $json.clean_response !=='' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        -272
+      ],
+      "id": "457d44d7-06e6-4deb-a881-3b1ab5e69fb7",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Update row in sheet').item.json.Email }}",
+        "subject": "=Hello from TS Academy — How can we help?",
+        "message": "=Hello {{ $('Get row(s) in sheet').item.json['First Name'] }} thank you for reaching out to TS Academy. You have selected to chat with our customer agent. Please reply to this email with your question or request and we will get back to you shortly. Best regards, TS Academy",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        -128
+      ],
+      "id": "b4b9e668-91e8-4c8b-9565-5655c5a321a8",
+      "name": "Send a message1",
+      "webhookId": "5053a6ee-3baf-4fc7-ab6e-c259aad7d512",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumber": "2347081631744",
+        "message": "AI has failed to respond. Check workflow"
+      },
+      "type": "n8n-nodes-syncmate.whatsAuto",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -128
+      ],
+      "id": "359670d0-807e-41f0-9de3-0d430b75824b",
+      "name": "Send a notification1",
+      "credentials": {
+        "assistroTokenApi": {
+          "id": "C0DuxtHmcQetIoDJ",
+          "name": "Assistro Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 531734079,
+          "mode": "list",
+          "cachedResultName": "Error Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=531734079"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Workflow": "Workflow 5",
+            "Lead Email": "={{ $('Update row in sheet').item.json.Email }}",
+            "Error Message": "AI has failed to respond. Check workflow"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error Message",
+              "displayName": "Error Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Email",
+              "displayName": "Lead Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        -128
+      ],
+      "id": "5eab85a7-e35d-452c-bd08-57a168aafb90",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7f6028ba-d97c-4707-aba6-223705ea3b6e",
+              "leftValue": "={{ $json.booking_detected }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        912,
+        -368
+      ],
+      "id": "99829e06-baf7-4f2f-888d-3f07ca48440a",
+      "name": "If2",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2060066331,
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=2060066331"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Update row in sheet').item.json.Email }}",
+            "Conversation Status": "booking requested",
+            "Booking Intent": "Yes",
+            "Appointment Date": "={{ $('Edit Fields3').item.json.appointment_date }}",
+            "Appointment Time": "={{ $('Edit Fields3').item.json.appointment_time }}",
+            "Last contact": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone number",
+              "displayName": "Phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service interested in",
+              "displayName": "Service interested in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Response Sent",
+              "displayName": "Response Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up needed",
+              "displayName": "Follow up needed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created at",
+              "displayName": "Created at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up sent at",
+              "displayName": "Follow up sent at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last contact",
+              "displayName": "Last contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Conversation Status",
+              "displayName": "Conversation Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Booking Intent",
+              "displayName": "Booking Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Time",
+              "displayName": "Appointment Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        -448
+      ],
+      "id": "15f49ba4-0ba9-4ccc-87ca-bb607494f49e",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumber": "2347081631744",
+        "message": "=�� Booking Request!\nName: {{ $('Edit Fields2').item.json.first_name }}\nService:{{ $('Edit Fields2').item.json.service }}\nEmail: {{ $('Edit Fields2').item.json.email }}\nDate:{{ $('Edit Fields3').item.json.appointment_date }}\nTime: {{ $('Edit Fields3').item.json.appointment_time }}\nMessage: {{ $('Edit Fields2').item.json.reply_content }}"
+      },
+      "type": "n8n-nodes-syncmate.whatsAuto",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -448
+      ],
+      "id": "3fd7c1b9-7f72-4e1c-9932-5cde462acc53",
+      "name": "Send a notification2",
+      "credentials": {
+        "assistroTokenApi": {
+          "id": "C0DuxtHmcQetIoDJ",
+          "name": "Assistro Token account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1584,
+        -368
+      ],
+      "id": "386077c2-24e4-4fc1-813c-654e6da699cf",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2fd9e684-ef60-432e-80dd-097ff80d0ea1",
+              "leftValue": "={{ $('Edit Fields3').item.json.escalation_needed }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1808,
+        -368
+      ],
+      "id": "f3642a9d-16d0-44af-b9fc-554298a68422",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2060066331,
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=2060066331"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Edit Fields2').item.json.email }}",
+            "Conversation Status": "escalated",
+            "Last contact": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone number",
+              "displayName": "Phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service interested in",
+              "displayName": "Service interested in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Response Sent",
+              "displayName": "Response Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up needed",
+              "displayName": "Follow up needed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created at",
+              "displayName": "Created at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up sent at",
+              "displayName": "Follow up sent at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last contact",
+              "displayName": "Last contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Conversation Status",
+              "displayName": "Conversation Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Booking Intent",
+              "displayName": "Booking Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Time",
+              "displayName": "Appointment Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2032,
+        -448
+      ],
+      "id": "d86d8974-d913-4b65-8990-88f66647fce9",
+      "name": "Update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumber": "2347081631744",
+        "message": "=�� Frustrated Customer!\nName: {{ $('Edit Fields2').item.json.first_name }}\nService: {{ $('Edit Fields2').item.json.service }}\nSentiment: {{ $('Edit Fields3').item.json.sentiment }}\nPlease review their conversation urgently."
+      },
+      "type": "n8n-nodes-syncmate.whatsAuto",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        -448
+      ],
+      "id": "95bb1b2a-5c99-4567-bfa1-e18d61c03363",
+      "name": "Send a notification3",
+      "credentials": {
+        "assistroTokenApi": {
+          "id": "C0DuxtHmcQetIoDJ",
+          "name": "Assistro Token account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2480,
+        -368
+      ],
+      "id": "97f561fe-ceeb-4653-8555-eab4d06cf17f",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields2').item.json.email }}",
+        "subject": "=Re: {{ $('Edit Fields2').item.json.reply_subject }}",
+        "message": "={{ $('Edit Fields3').item.json.clean_response }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        -368
+      ],
+      "id": "58455174-8535-4beb-bcc3-b7122736e85b",
+      "name": "Send a message2",
+      "webhookId": "f5ac525e-d52c-48c7-96b3-9eaef61bc4fc",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 257337523,
+          "mode": "list",
+          "cachedResultName": "Chat History NEW",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=257337523"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_email": "={{ $('Edit Fields2').item.json.sender_email }}",
+            "sender": "customer",
+            "message_content": "={{ $('Edit Fields2').item.json.reply_content }}",
+            "timestamp": "={{ $now }}",
+            "sentiment": "={{ $('Edit Fields3').item.json.sentiment }}",
+            "booking_intent": "={{ $('Edit Fields3').item.json.booking_detected }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "lead_email",
+              "displayName": "lead_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender",
+              "displayName": "sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_content",
+              "displayName": "message_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "booking_intent",
+              "displayName": "booking_intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2928,
+        -368
+      ],
+      "id": "95fe988f-c616-4907-930c-6c02f156a582",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 257337523,
+          "mode": "list",
+          "cachedResultName": "Chat History NEW",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=257337523"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_email": "={{ $('Edit Fields2').item.json.sender_email }}",
+            "sender": "AI",
+            "message_content": "={{ $('Edit Fields3').item.json.clean_response }}",
+            "sentiment": "={{ $('Edit Fields3').item.json.sentiment }}",
+            "booking_intent": "={{ $('Edit Fields3').item.json.booking_detected }}",
+            "timestamp": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "lead_email",
+              "displayName": "lead_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender",
+              "displayName": "sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_content",
+              "displayName": "message_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "booking_intent",
+              "displayName": "booking_intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3152,
+        -368
+      ],
+      "id": "71a3b909-255a-4a66-aa6c-9a99b1e88d0c",
+      "name": "Append row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40",
+          "mode": "list",
+          "cachedResultName": "Lead Capture",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2060066331,
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1apTaQl4eRopHZuMU3uQJBTk-OjYEDeAN90uCD9gtv40/edit#gid=2060066331"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Edit Fields2').item.json.email }}",
+            "Sentiment": "={{ $('Edit Fields3').item.json.sentiment }}",
+            "Booking Intent": "={{ $('Edit Fields3').item.json.booking_detected }}",
+            "Conversation Status": "={{ $($('Edit Fields3').item.json.booking_detected === 'no' && $($('Edit Fields3').item.json.escalation_needed === 'no' ? 'in conversation' : $('Edit Fields3').item.json.booking_detected === 'yes' ? 'booking requested' : 'escalated' }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone number",
+              "displayName": "Phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service interested in",
+              "displayName": "Service interested in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Response Sent",
+              "displayName": "Response Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up needed",
+              "displayName": "Follow up needed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created at",
+              "displayName": "Created at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow up sent at",
+              "displayName": "Follow up sent at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last contact",
+              "displayName": "Last contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Conversation Status",
+              "displayName": "Conversation Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Booking Intent",
+              "displayName": "Booking Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Time",
+              "displayName": "Appointment Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3376,
+        -368
+      ],
+      "id": "d38b4777-fa36-49dd-a5a8-cae977337541",
+      "name": "Update row in sheet3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a notification": {
+      "main": [
+        []
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Send a notification1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a notification1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a notification2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a notification2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a notification3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a notification3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "faa45272-0a89-4b40-b6bb-43c65f820207",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "F0daxQRjmoQDxoio",
+  "tags": []
+}

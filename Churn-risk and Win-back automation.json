@@ -1,0 +1,712 @@
+{
+  "name": "Churn-risk and Win-back automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 7,
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -848,
+        0
+      ],
+      "id": "f0ff4267-2d58-4104-bcbb-f51c14d02ecc",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "18fxYuvAZ8J5NVHFSqJ3Qf9Ng1LkXFUTh",
+          "mode": "list",
+          "cachedResultName": "Data pratice set, sales.",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18fxYuvAZ8J5NVHFSqJ3Qf9Ng1LkXFUTh/edit?usp=drivesdk&ouid=108821844367345698427&rtpof=true&sd=true"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -624,
+        0
+      ],
+      "id": "32829b5c-3424-4556-b870-5c9dd79a465e",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "tlatesxsH6zDobvw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "headerRow": true,
+          "sheetName": "Sales Data"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "a766207c-23e1-4ffc-ba35-2eaa9d1fe7a4",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const customers = {};\n\nfor (const item of $input.all()) {\n  const email = item.json['Customer Email'];\n  if (!email) continue;\n\n  if (!customers[email]) {\n    customers[email] = {\n      'Customer Email': email,\n      'Customer Name': item.json['Customer Name'],\n      'Category': item.json['Category'],\n      'Order Date': item.json['Order Date'],\n      'Revenue ($)': item.json['Revenue ($)'] || 0,\n    };\n  } else {\n    // Keep the most recent order date\n    if (item.json['Order Date'] > customers[email]['Order Date']) {\n      customers[email]['Order Date'] = item.json['Order Date'];\n    }\n    // Sum up total revenue\n    customers[email]['Revenue ($)'] += item.json['Revenue ($)'] || 0;\n  }\n}\n\nreturn Object.values(customers).map(c => ({ json: c }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "e30c54b3-d00f-44a3-bdf5-2140dc76bfe3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\n\nreturn $input.all().map(item => {\n  const lastOrder = new Date(item.json['Order Date']);\n  const days = Math.floor((today - lastOrder) / (1000 * 60 * 60 * 24));\n  \n  const revenue = item.json['Revenue ($)'];\n  const segment = revenue >= 5000 ? 'VIP' \n                : revenue >= 1000 ? 'Standard' \n                : 'Low value';\n\n  return {\n    json: {\n      ...item.json,\n      daysSinceOrder: days,\n      churnRisk: days >= 90 ? 'high' : days >= 60 ? 'medium' : 'low',\n      segment: segment,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        0
+      ],
+      "id": "4469b525-f9ef-480c-9d03-562a12553d71",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b35b2d28-b599-4598-8c7a-d30be2b8a9ad",
+              "leftValue": "={{ $json.daysSinceOrder }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        0
+      ],
+      "id": "08e0c67a-a6df-486e-bf97-cd88901bb6ef",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['Revenue ($)'] }}",
+                    "rightValue": 1000,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "id": "8a02dc6b-4511-4f8d-bf77-640a3d588546"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "VIP"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3f2e8201-300b-45bc-a37a-08a358853024",
+                    "leftValue": "={{ $json['Revenue ($)'] }}",
+                    "rightValue": 500,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Standard"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        -16
+      ],
+      "id": "84baf282-7e06-4dba-851f-c0296347d284",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const name = item.json['Customer Name'].split(' ')[0];\n  const category = item.json['Category'];\n  const days = item.json.daysSinceOrder;\n  const segment = item.json.segment;\n\n  let offer = '';\n  if (segment === 'VIP') {\n    offer = `As one of our most valued customers, we'd love to give you exclusive early access to our newest ${category} arrivals before anyone else.`;\n  } else if (segment === 'Standard') {\n    offer = `We'd love to welcome you back with free shipping on your next ${category} order — no minimum spend required.`;\n  } else {\n    offer = `We'd love to welcome you back with 15% off your next order. Use code WINBACK15 at checkout.`;\n  }\n\n  let email = `Hi ${name},\n\nWe noticed it's been ${days} days since your last order and we genuinely miss you. Your taste in ${category} is amazing and we'd love to see you back.\n\n${offer}\n\nClick below to shop now — we've got some great new items we think you'll love.\n\nWarm regards,\nThe Team`;\n\n  email = email\n    .replace(/\\*+/g, '')\n    .replace(/^\\s*-\\s+/gm, '')\n    .replace(/\\s*-{2,}\\s*/g, ' ')\n    .replace(/[ \\t]+/g, ' ')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n\n  return {\n    json: {\n      ...item.json,\n      emailBody: email,\n      emailSubject: `We miss you, ${name} — here's something special`,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -16
+      ],
+      "id": "fd204f8c-9613-4649-8666-3e43bfe0f31b",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const name = item.json['Customer Name'].split(' ')[0];\n  const category = item.json['Category'];\n  const days = item.json.daysSinceOrder;\n  const segment = item.json.segment;\n\n  let offer = '';\n  if (segment === 'VIP') {\n    offer = `As one of our most valued customers, we'd love to give you exclusive early access to our newest ${category} arrivals before anyone else.`;\n  } else if (segment === 'Standard') {\n    offer = `We'd love to welcome you back with free shipping on your next ${category} order — no minimum spend required.`;\n  } else {\n    offer = `We'd love to welcome you back with 15% off your next order. Use code WINBACK15 at checkout.`;\n  }\n\n  let email = `Hi ${name},\n\nWe noticed it's been ${days} days since your last order and we genuinely miss you. Your taste in ${category} is amazing and we'd love to see you back.\n\n${offer}\n\nClick below to shop now — we've got some great new items we think you'll love.\n\nWarm regards,\nThe Team`;\n\n  email = email\n    .replace(/\\*+/g, '')\n    .replace(/^\\s*-\\s+/gm, '')\n    .replace(/\\s*-{2,}\\s*/g, ' ')\n    .replace(/[ \\t]+/g, ' ')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n\n  return {\n    json: {\n      ...item.json,\n      emailBody: email,\n      emailSubject: `We miss you, ${name} — here's something special`,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        96
+      ],
+      "id": "207a31e9-4fef-40f4-9dd9-79092a812b77",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "={{ $json.emailSubject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -256
+      ],
+      "id": "eb367095-9b8d-4281-902b-c21db35b079c",
+      "name": "Send a message",
+      "webhookId": "9d316403-8a36-4854-8857-5d5b4e2e1530",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "={{ $json.emailSubject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        -16
+      ],
+      "id": "97228dcb-2400-4660-9e05-67186d463aef",
+      "name": "Send a message1",
+      "webhookId": "feaffbc8-229c-4893-90db-3aaa6118854b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Customer Email'] }}",
+        "subject": "={{ $json.emailSubject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        96
+      ],
+      "id": "c410ef53-614b-4803-b1a2-e01d92fecc51",
+      "name": "Send a message2",
+      "webhookId": "680e926f-e22a-4bfa-91af-bab183dfc1df",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1488,
+        -128
+      ],
+      "id": "24fe4705-c7f3-45f2-bdc6-9f3545c2c2c1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "subject: \"We miss you\"",
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -640,
+        464
+      ],
+      "id": "aba87a95-3107-40d4-ab02-113e455dd72c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -432,
+        464
+      ],
+      "id": "d5ac87c5-3a1d-4aae-934d-927853c9e788",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1488,
+        -16
+      ],
+      "id": "ed96094b-a361-4fc8-bc4e-eec223d157b0",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1488,
+        96
+      ],
+      "id": "047b145a-da40-45a9-a40a-e3ed84db898a",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        464
+      ],
+      "id": "7e552574-81d8-4d13-b37b-c320fb1f6965",
+      "name": "Send a message3",
+      "webhookId": "ce5d7246-14de-4e0a-96de-0940969fc004",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        528,
+        592
+      ],
+      "id": "df762854-6a04-41c0-8c3c-01f404fcfb1f",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "imoleayoakogun@gmail.com",
+        "subject": "=n8n workflow error: {{ $json.workflow.name }}",
+        "message": "=A problem occurred in your workflow. Here are the details:  Workflow: {{ $json.workflow.name }} Node that failed: {{ $json.execution.lastNodeExecuted }} Error message: {{ $json.execution.error.message }} Time of error: {{ $now.toISO() }}  Please log in to n8n to investigate.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        592
+      ],
+      "id": "2da83029-5ea8-4927-a234-fab1b6e82bf7",
+      "name": "Send a message4",
+      "webhookId": "6a5d2afd-87ae-4d84-b222-657ef9ae4832",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        704,
+        -16
+      ],
+      "id": "fd292570-7c88-4a9d-ac21-5ccf08b6e363",
+      "name": "AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b1998788-30aa-4288-a1a4-adee71cbc78e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "qxB0sA9mSYDAp5mc",
+  "tags": []
+}

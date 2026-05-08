@@ -1,0 +1,610 @@
+{
+  "name": "Emaile classifer",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        128
+      ],
+      "id": "72dbe7e2-ee8a-4d6b-a0af-7b9a328cfbf9",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.text || $input.item.json.html || \"\";\nconst cleaned = body.replace(/<[^>]*>/g, \" \").replace(/\\s+/g, \" \").trim().slice(0, 1500);\n\nreturn [{\n  json: {\n    subject: $input.item.json.subject,\n    from: $input.item.json.from,\n    body: cleaned\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        128
+      ],
+      "id": "1214fbeb-4f2b-4dfd-a248-680c2eebe7e5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an email classification assistant. Classify the given email into exactly one of these departments:  - Sales - Customer Service - Human Resources - Finance - Operations - Other  Respond with a valid JSON object only. No explanation. Format: {\"department\": \"<department name>\", \"confidence\": \"<high|medium|low>\", \"reason\": \"<one sentence>\"}"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Subject:{{ $('Gmail Trigger').item.json.Subject }}  \nFrom:{{ $('Gmail Trigger').item.json.From }} \nBody: {{ $json.body }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -352,
+        128
+      ],
+      "id": "38725d38-fb30-4172-b864-5b9312f4d9eb",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        352
+      ],
+      "id": "0e6178f8-3c5b-4224-b835-2cc6a86343b9",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hbxvgWzZaXJkIrni",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.text || $input.item.json.output || \"\";\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\nconst parsed = match ? JSON.parse(match[0]) : { department: \"Other\", confidence: \"low\", reason: \"Parse failed\" };\n\nreturn [{\n  json: {\n    ...$input.item.json,\n    department: parsed.department,\n    confidence: parsed.confidence,\n    reason: parsed.reason\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        128
+      ],
+      "id": "fd6c1bcd-2713-4c66-8281-a42c0aba022d",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.department }}",
+                    "rightValue": "Sales",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "934e59ab-ca72-4f7a-9f52-1b0abb023461"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sales"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0fee2038-247d-4901-ae25-8b1ebf8686a4",
+                    "leftValue": "={{ $json.department }}",
+                    "rightValue": "Customer Service",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Customer Service"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c66349e4-9ee7-453c-b009-6a42bd752bbb",
+                    "leftValue": "={{ $json.department }}",
+                    "rightValue": "Human Resources",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Human Resources"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b8a474d5-2c97-4ad9-881c-47a89cd02f8a",
+                    "leftValue": "={{ $json.department }}",
+                    "rightValue": "Finance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Finance"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f4c58359-6070-4e32-84d6-068dabd165c8",
+                    "leftValue": "={{ $json.department }}",
+                    "rightValue": "Operations",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Operations"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "dafacd4b-0396-4fda-8b5d-5a2168763c84",
+                    "leftValue": "={{ $json.department }}",
+                    "rightValue": "Other",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Other"
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        64
+      ],
+      "id": "e12f3638-b274-45ec-a727-68032c67c28f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_158743831515565196"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -352
+      ],
+      "id": "89583522-adc2-479e-934e-b0d4cc9421f1",
+      "name": "Add label to message",
+      "webhookId": "db5eba94-022b-492c-b98c-29f2e3be2fb9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_3242097692934677137"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -160
+      ],
+      "id": "c208cf19-d261-40af-acc9-a5ae40d76cec",
+      "name": "Add label to message1",
+      "webhookId": "a09c6c27-34b1-4715-853e-6bf82d70fca7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_5099111704560585968"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        32
+      ],
+      "id": "feecda90-d569-4551-915a-0debbf6c1481",
+      "name": "Add label to message2",
+      "webhookId": "b1695300-b8b3-49e6-9011-6534483764bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_2812881291285334356"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "46996fd8-452d-4b9f-9c13-f555943e9cf9",
+      "name": "Add label to message3",
+      "webhookId": "a26b46e7-67f6-4c3d-9427-3e44690ee564",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_1916427226035019357"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        416
+      ],
+      "id": "318eb41a-5f68-451a-85a5-e4f0dae9af80",
+      "name": "Add label to message4",
+      "webhookId": "9543cc9d-bf43-4511-ab95-636ff23df658",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_1558134540629917421"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        608
+      ],
+      "id": "a3aa1e54-1362-4ed6-b6b9-80b38f05c379",
+      "name": "Add label to message5",
+      "webhookId": "44f6ba14-29bc-4bae-a02a-67e453cb7a1e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "labelIds[1]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        752,
+        112
+      ],
+      "id": "34081498-2dbe-4e00-ba2a-29c3fa78c879",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add label to message2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add label to message3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add label to message4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add label to message5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "64099256-42b1-4514-ac63-bb17622c4e92",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "GapvG5CE17KHWtUb",
+  "tags": []
+}

@@ -1,0 +1,1021 @@
+{
+  "name": "Gym Registration system",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Gym Spec",
+        "formDescription": "Gym Spec enrollment form",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone number",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Sub",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 month"
+                  },
+                  {
+                    "option": "2 Months"
+                  },
+                  {
+                    "option": "3 Months"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Profile Picture",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".jpg, .png",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        -288
+      ],
+      "id": "94ab7734-cbd3-44cd-a921-57c32b5eaa7c",
+      "name": "On form submission",
+      "webhookId": "44b7ddb4-dec3-4ac1-b3a0-058b0c1211dc"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.imgbb.com/1/upload",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "12890bc7cd32c695d58e6db0f965fceb"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "Profile_Picture"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        -288
+      ],
+      "id": "4cde628f-59da-464a-ab3c-f35ab361b43e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appwwuR2Du69SMNS8",
+          "mode": "list",
+          "cachedResultName": "Gym Spec",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9AbL7YMeQABgbg",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8/tbl9AbL7YMeQABgbg"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('On form submission').item.json['Full Name'] }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Phone Number": "=+234{{ $('On form submission').item.json['Phone number'] }}",
+            "Subscription": "={{ $('On form submission').item.json.Sub }}",
+            "Start date": "={{ $now.format('MM-dd-yyyy') }}",
+            "End date": "={{ $now.plus({ months: 3 }).toFormat('MM-dd-yyyy') }}",
+            "Profile Picture": "={{ $json.profilePicture[0].url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profile Picture",
+              "displayName": "Profile Picture",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Subscription",
+              "displayName": "Subscription",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "0",
+                  "value": "0"
+                },
+                {
+                  "name": "1",
+                  "value": "1"
+                },
+                {
+                  "name": "3",
+                  "value": "3"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start date",
+              "displayName": "Start date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "End date",
+              "displayName": "End date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Active",
+                  "value": "Active"
+                },
+                {
+                  "name": "Expiring",
+                  "value": "Expiring"
+                },
+                {
+                  "name": "Expired",
+                  "value": "Expired"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -288
+      ],
+      "id": "1ffa0a4d-7d72-4fb6-af11-1f8493d46a79",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "t5NgaWALJei8qnso",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e71f3b89-55fd-42f8-bbd5-c2cb2a9dba33",
+              "name": "fields['Full Name']",
+              "value": "={{ $json.fields['Full Name'].split(' ') [1]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -288
+      ],
+      "id": "b567e337-540a-4efb-8978-e6dbc92a2742",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        -288
+      ],
+      "id": "e1fa6712-580e-44d5-b163-31d3785f0c12",
+      "name": "Wait",
+      "webhookId": "c140f1f5-c4f8-4b76-bd70-38e4ff7e67af"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Create a record').item.json.fields['Email Address'] }}",
+        "subject": "Welcome to Gym Spec, Lets Begin",
+        "message": "=  <p>Dear {{ $json.fields['Full Name'] }},</p>\n\n<p><strong>Welcome to Gym Spec!</strong></p>\n\n<p>We’re excited to have you join our fitness community. At Gym Spec, our goal is to support you in building a stronger, healthier, and more confident version of yourself.</p>\n\n<p>As a new member, you now have access to our facilities, training programs, and a team that is committed to helping you stay consistent and motivated.</p>\n\n<p>Your journey starts now—and we’re glad to be part of it.</p>\n\n<p>Warm regards,<br/>Gym Spec Team</p>\n  `\n};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        -288
+      ],
+      "id": "f5bcf03d-d017-47b9-bc37-c327beef29f1",
+      "name": "Send a message",
+      "webhookId": "f3185965-0116-4909-a722-52eced14b713",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "bdfaebd0-c7b9-4516-a413-724869bf5e53",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appwwuR2Du69SMNS8",
+          "mode": "list",
+          "cachedResultName": "Gym Spec",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9AbL7YMeQABgbg",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8/tbl9AbL7YMeQABgbg"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "a22aa983-6904-4d5b-bf54-23b007f04d98",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "t5NgaWALJei8qnso",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6a1f4f85-9a19-43ff-a025-f79ddae8c96e",
+              "leftValue": "={{ $json.fields['End date'] }}",
+              "rightValue": "={{ $now.plus(3, 'days').toFormat('yyyy-MM-dd') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "891d216c-8b69-4d3e-9a69-32dd8433cd86",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1fc798a1-7723-4a5f-9caf-7b08fcbfee95",
+              "name": "fields['Full Name']",
+              "value": "={{ $json.fields['Full Name'].split(' ')[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "3c34ed4e-1fb9-497f-9653-affdb797daec",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('If').item.json.fields['Email Address'] }}",
+        "subject": "Your Gym subscription will be ending soon",
+        "message": "=<!DOCTYPE html> <html> <head>   <meta charset=\"UTF-8\">   <title>Gym Subscription Reminder</title> </head> <body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\">    <p>Dear {{ $json.fields['Full Name'] }},</p>    <p>This is a friendly reminder that your <strong>Gym Spec</strong> subscription is approaching its expiration date.</p>    <p>     To ensure uninterrupted access to our facilities and services, kindly take a moment to review and update your subscription details. You can manage your subscription by logging into your account and confirming your <strong>start date</strong> and <strong>end date</strong> to reflect your desired renewal period. </p>    <p><strong>Instructions:</strong></p>   <ol>     <li>Log in to your Gym Spec account.</li> <li>Navigate to the subscription or membership section.</li> Set or update your <strong>start date</strong> and <strong>end date</strong> accordingly.</li> Confirm your changes to complete the renewal process.</li>   </ol>    <p>     If you need any assistance or encounter any issues while updating your subscription, our support team is available to guide you.   </p>    <p>     We value your commitment to your fitness journey and look forward to continuing to support your progress. </p>    <p>Warm regards,<br>   <strong>Gym Spec Team</strong></p>  </body> </html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -64
+      ],
+      "id": "47c722fc-adde-49dd-8deb-6876fd68ac97",
+      "name": "Send a message1",
+      "webhookId": "c3975592-c81d-4183-93a8-c93cfbaee5d6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5799458509",
+        "text": "=Hi Imoleayo 👋  This is a reminder that your Gym Spec subscription will expire in 3 days.  To avoid any interruption in your access, kindly renew your subscription on time. You can update your start and end dates from your account dashboard.  If you need any help with the renewal process, feel free to reach out—we’re here to assist you.  Thank you for staying committed to your fitness journey 💪 Gym Spec Team",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -64
+      ],
+      "id": "ab224ec3-dda2-49c1-921f-41e011f1706a",
+      "name": "Send a text message",
+      "webhookId": "b38e15f9-c241-4bc6-b0d8-4ece0f492b56",
+      "credentials": {
+        "telegramApi": {
+          "id": "gYtLq17jFENkDyYk",
+          "name": "Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Light Gym Subscription Renewal",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Confirm Renewal",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes, renew my subscription"
+                  },
+                  {
+                    "option": "No, do not renew my subscription"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        32,
+        240
+      ],
+      "id": "aadb98c2-5c55-4485-8241-f644668973d9",
+      "name": "On form submission1",
+      "webhookId": "b83dcc4e-e236-4f39-9445-606a87c6aa29"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appwwuR2Du69SMNS8",
+          "mode": "list",
+          "cachedResultName": "Gym Spec",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9AbL7YMeQABgbg",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8/tbl9AbL7YMeQABgbg"
+        },
+        "filterByFormula": "=={Email Address}=\"{{ $json['Email Address'] }}\"",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        240
+      ],
+      "id": "ba365a37-0973-4b74-9126-dd53410b1809",
+      "name": "Search records1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "t5NgaWALJei8qnso",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3a2beba7-9101-4484-b21d-7d6ddde1bba2",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        240
+      ],
+      "id": "d2bc05fb-2f66-4949-8a27-05cfc1715d73",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date($input.first().json.fields['End date']);\n\n// Get current expiry date from Airtable record\nconst currentExpiry = new Date($input.first().json.fields['Expiry Date']);\n\n// If they're renewing early, new start = current expiry date\n// If already expired, new start = today\nconst startDate = currentExpiry > today ? currentExpiry : today;\n\n// Add 90 days (3 months)\nconst expiryDate = new Date(startDate);\nexpiryDate.setDate(expiryDate.getDate() + 90);\n\nreturn [{\n  json: {\n    recordId: $input.first().json.id,\n    memberName: $input.first().json.fields['Full Name'],\n    memberEmail: $input.first().json.fields['Email Address'],\n    newStartDate: startDate.toISOString().split('T')[0],\n    newExpiryDate: expiryDate.toISOString().split('T')[0],\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        144
+      ],
+      "id": "ab25de47-3f4b-4c04-ba3b-ee07e5fd0530",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appwwuR2Du69SMNS8",
+          "mode": "list",
+          "cachedResultName": "Gym Spec",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl9AbL7YMeQABgbg",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appwwuR2Du69SMNS8/tbl9AbL7YMeQABgbg"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.recordId }}",
+            "Status": "Active",
+            "Start date": "={{ $json.newStartDate }}",
+            "End date": "={{ $json.newExpiryDate }}",
+            "Subscription": "3 months"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profile Picture",
+              "displayName": "Profile Picture",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Subscription",
+              "displayName": "Subscription",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "0",
+                  "value": "0"
+                },
+                {
+                  "name": "1",
+                  "value": "1"
+                },
+                {
+                  "name": "3",
+                  "value": "3"
+                },
+                {
+                  "name": "1 month",
+                  "value": "1 month"
+                },
+                {
+                  "name": "3 months",
+                  "value": "3 months"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start date",
+              "displayName": "Start date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "End date",
+              "displayName": "End date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Active",
+                  "value": "Active"
+                },
+                {
+                  "name": "Expiring",
+                  "value": "Expiring"
+                },
+                {
+                  "name": "Expired",
+                  "value": "Expired"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        144
+      ],
+      "id": "e19f5861-c6f8-4880-9dec-29f670818d30",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "t5NgaWALJei8qnso",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "imoleayoakogun@gmail.com",
+        "subject": "Your Gym Membership Has Been Renewed",
+        "message": "=<p>Hi {{ $('Code in JavaScript').item.json.memberName }}  ,</p>  <p>Your membership has been successfully renewed.</p>  <p>Here are your new subscription details:</p>  <ul>   <li><strong>Status:</strong> Active</li>   <li><strong>Start Date:</strong> {{ $('Code in JavaScript').item.json.newStartDate }}   </li>   <li><strong>Expiry Date:</strong> {{ $('Code in JavaScript').item.json.newExpiryDate }} </li> </ul>  <p>Thank you for renewing with us. See you at the gym!</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "fb0576c2-b069-4776-8043-5eb054cabc98",
+      "name": "Send a message2",
+      "webhookId": "97c1eb5c-5e3f-4d0a-99d3-91fe722128d9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sCMwFpfgKRpunkDl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// In a Code node\nreturn [{\n  json: {\n    profilePicture: [\n      { url: $input.first().json.data.image.url }\n    ]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        -288
+      ],
+      "id": "6acf6b2f-4b77-4019-9917-1925aa5fbc04",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission1": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3440884d-ac5d-4334-9b57-d1429a23d7a1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "6EIBrw5bFO9LCpcH",
+  "tags": []
+}

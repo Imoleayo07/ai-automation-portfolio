@@ -1,0 +1,378 @@
+{
+  "name": "Lead scoring and prioritization workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        16
+      ],
+      "id": "3047ef2e-05be-423d-ab71-90d7d803c6c1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1R-TRBSMODfJrL1ixhGjp25N1Dsu2SE_S",
+          "mode": "list",
+          "cachedResultName": "b2b_lead_generation_new.xlsx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R-TRBSMODfJrL1ixhGjp25N1Dsu2SE_S/edit?usp=drivesdk&ouid=108821844367345698427&rtpof=true&sd=true"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "1952f9b7-7383-4ba2-b40d-918c90486602",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "tlatesxsH6zDobvw",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "headerRow": true,
+          "sheetName": "Sheet1"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        16
+      ],
+      "id": "742a8b1a-0d7f-4b19-9844-ce6ac6981510",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  let score = 0;\n  const data = item.json;\n\n  // Score by company size\n  const size = data['Company Size'];\n  if (size === '1000+')       score += 30;\n  else if (size === '501-1000') score += 25;\n  else if (size === '201-500')  score += 20;\n  else if (size === '51-200')   score += 15;\n  else if (size === '11-50')    score += 10;\n  else                          score += 5;\n\n  // Score by job title seniority\n  const title = data['Job Title'] || '';\n  if (['CEO','CTO','CFO','COO'].some(t => title.includes(t)))        score += 30;\n  else if (['VP','Director','Head'].some(t => title.includes(t)))     score += 20;\n  else if (['Manager','Lead'].some(t => title.includes(t)))           score += 10;\n  else                                                                 score += 5;\n\n  // Score by industry\n  const industry = data['Industry'] || '';\n  if (['SaaS / Technology','Financial Services'].includes(industry))  score += 20;\n  else if (['Healthcare','Manufacturing'].includes(industry))          score += 15;\n  else                                                                 score += 10;\n\n  // Score by lead source\n  const source = data['Lead Source'] || '';\n  if (['Referral','Partner'].includes(source))                        score += 15;\n  else if (['LinkedIn','Webinar'].includes(source))                   score += 10;\n  else                                                                 score += 5;\n\n  // Score by current stage\n  const stage = data['Stage'] || '';\n  if (['Negotiation','Proposal Sent'].includes(stage))               score += 20;\n  else if (['Qualified','Contacted'].includes(stage))                 score += 10;\n  else if (stage === 'New')                                           score += 5;\n\n  // Assign priority based on total score\n  const priority = score >= 80 ? 'Hot'\n                 : score >= 60 ? 'Warm'\n                 : score >= 40 ? 'Nurture'\n                 : 'Cold';\n\n  // Assign recommended action\n  const action = score >= 80 ? 'Call immediately'\n               : score >= 60 ? 'Send personalised email'\n               : score >= 40 ? 'Add to nurture sequence'\n               : 'Deprioritise';\n\n  return {\n    json: {\n      ...data,\n      leadScore: score,\n      scoredPriority: priority,\n      recommendedAction: action,\n      scoredDate: new Date().toISOString().split('T')[0],\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        16
+      ],
+      "id": "3652ece4-0235-49ff-8f27-b9b5bd71d5e4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a0aebd4c-9812-4ade-9a2f-f534ecd1f28e",
+              "leftValue": "={{ $json.leadScore }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        16
+      ],
+      "id": "39573c97-f896-4e0f-95ec-d383698ce2c3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LGaWQjHv9zzk4BAQO-8E-6pQ10sQ82-WFevgu059O7E",
+          "mode": "list",
+          "cachedResultName": "Lead Scoring Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LGaWQjHv9zzk4BAQO-8E-6pQ10sQ82-WFevgu059O7E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LGaWQjHv9zzk4BAQO-8E-6pQ10sQ82-WFevgu059O7E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Lead ID": "={{ $json['Lead ID'] }}",
+            "First Name": "={{ $json['First Name'] }}",
+            "Last Name": "={{ $json['Last Name'] }}",
+            "Company Name": "={{ $json['Company Name'] }}",
+            "Job Title": "={{ $json['Job Title'] }}",
+            "Industry": "={{ $json.Industry }}",
+            "Company Size": "={{ $json['Company Size'] }}",
+            "Lead Source": "={{ $json['Lead Source'] }}",
+            "Stage": "={{ $json.Stage }}",
+            "Deal Value ($)": "={{ $json['Deal Value ($)'] }}",
+            "Lead Score": "={{ $json.leadScore }}",
+            "Scored Priority": "={{ $json.scoredPriority }}",
+            "Recommended Action": "={{ $json.recommendedAction }}",
+            "Assigned Rep": "={{ $json['Assigned Rep'] }}",
+            "Scored Date": "={{ $json.scoredDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Lead ID",
+              "displayName": "Lead ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Size",
+              "displayName": "Company Size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Source",
+              "displayName": "Lead Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Stage",
+              "displayName": "Stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deal Value ($)",
+              "displayName": "Deal Value ($)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Scored Priority",
+              "displayName": "Scored Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recommended Action",
+              "displayName": "Recommended Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assigned Rep",
+              "displayName": "Assigned Rep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Scored Date",
+              "displayName": "Scored Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -80
+      ],
+      "id": "4c7c2a8c-2902-4879-b8f7-40155882bd6f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "799c4c47-91fc-4fa9-9c37-93c501ee2893",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "Y6ajUM7lQlBnNBdg",
+  "tags": []
+}
