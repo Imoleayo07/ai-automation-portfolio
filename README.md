@@ -101,6 +101,5 @@ Improves outbound sales efficiency.
 
 ## Contact 
 LinkedIn: (https://www.linkedin.com/akogun-imoleayo-583a54278)
-Email: imoleayoakogun@gmail.com
+Email: akogunimoleayochristiana@gmail.com
 GitHub: https://github.com/Imoleayo07
-
