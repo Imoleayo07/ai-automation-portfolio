@@ -1,0 +1,1611 @@
+{
+  "name": "Mama Tee's Kitchen voice agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e6d59258-5056-47ab-ae9a-6353d27d0736",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        64
+      ],
+      "id": "fe82cc37-7f41-4998-a282-beb6beafbf83",
+      "name": "Webhook",
+      "webhookId": "e6d59258-5056-47ab-ae9a-6353d27d0736"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200,
+          "responseKey": "={\"result\": \"success\"}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -32,
+        64
+      ],
+      "id": "a2390c37-d374-4806-ac87-326eae4e16df",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callType }}",
+                    "rightValue": "Order",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9084e6ed-936e-4a64-8843-2872469eb18c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Order"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e01600a3-8b17-4acf-b604-fc01d2337083",
+                    "leftValue": "={{ $json.callType }}",
+                    "rightValue": "Reservation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Reservation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3db7ebde-70d8-4745-8a73-f0715febeb88",
+                    "leftValue": "={{ $json.callType }}",
+                    "rightValue": "Escalation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Escalation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9342667c-3ed7-4b9f-b579-f4cb75564ecb",
+                    "leftValue": "={{ $json.callType }}",
+                    "rightValue": "General Enquiry",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "General Enquiry"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        32
+      ],
+      "id": "b83d0922-2d33-4524-a436-2316feb65439",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw",
+          "mode": "list",
+          "cachedResultName": "Mama Tee's Kitchen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('Code in JavaScript').item.json.timestamp }}",
+            "Customer Name ": "={{ $('Code in JavaScript').item.json.callerName }}",
+            "Phone Number": "={{ $('Code in JavaScript').item.json.callerPhone }}",
+            "Order Details": "={{ $('Code in JavaScript').item.json.orderDetails }}",
+            "Total Estimate": "={{ $('Code in JavaScript').item.json.totalEstimate }}",
+            "Status": "New",
+            "Payment Confirmed": "No",
+            "Delievery/Pickup": "={{ $('Code in JavaScript').item.json.deliveryOrPickup }}",
+            "Delievery Address": "={{ $('Code in JavaScript').item.json.deliveryAddress }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name ",
+              "displayName": "Customer Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Details",
+              "displayName": "Order Details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Estimate",
+              "displayName": "Total Estimate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Confirmed",
+              "displayName": "Payment Confirmed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Delievery/Pickup",
+              "displayName": "Delievery/Pickup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Delievery Address",
+              "displayName": "Delievery Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -224
+      ],
+      "id": "c5c4ced1-0a56-44f0-8d9a-01f76a44119f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kvGMEYSUvVF5l6Xd",
+          "name": "Akogun"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw",
+          "mode": "list",
+          "cachedResultName": "Mama Tee's Kitchen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 787517153,
+          "mode": "list",
+          "cachedResultName": "Reservation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit#gid=787517153"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "Customer Name": "={{ $json.callerName }}",
+            "Phone Number": "={{ $json.callerPhone }}",
+            "Date/Time": "={{ $json.reservationDate }} {{ $json.reservationTime }}",
+            "Party Size": "={{ $json.partySize }}",
+            "Status": "New"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date/Time",
+              "displayName": "Date/Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Party Size",
+              "displayName": "Party Size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -32
+      ],
+      "id": "b07db229-9662-40bd-b0e2-33753a95030d",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "v3LelKEcI2rNr3QU",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw",
+          "mode": "list",
+          "cachedResultName": "Mama Tee's Kitchen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 377322848,
+          "mode": "list",
+          "cachedResultName": "Escalation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit#gid=377322848"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('Code in JavaScript').item.json.timestamp }}",
+            "Customer Name": "={{ $('Code in JavaScript').item.json.callerName }}",
+            "Phone Number": "={{ $('Code in JavaScript').item.json.callerPhone }}",
+            "Issue/Question": "={{ $('Code in JavaScript').item.json.escalationReason }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Issue/Question",
+              "displayName": "Issue/Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        160
+      ],
+      "id": "7cc7d31b-0853-4fb3-b7aa-bec912cccf5d",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "v3LelKEcI2rNr3QU",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8527757187",
+        "text": "=📅 New Reservation\n\n👤 Name: {{ $('Code in JavaScript').item.json.callerName }}\n📞 Phone: {{ $('Code in JavaScript').item.json.callerPhone }}\n🕐 Time: {{ $('Code in JavaScript').item.json.timestamp }}\n\n📆 Date: {{ $('Code in JavaScript').item.json.reservationDate }}\n🕐 Time: {{ $('Code in JavaScript').item.json.reservationTime }}\n👥 Party Size: {{ $('Code in JavaScript').item.json.partySize }}\n\nRemind customer of ₦5,000 deposit before the date.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        -32
+      ],
+      "id": "0bba136a-47cb-4855-aaef-35c2ff6aaaab",
+      "name": "Send a text message",
+      "webhookId": "c34ed307-8ae6-48d8-a411-8a57886a4ada",
+      "credentials": {
+        "telegramApi": {
+          "id": "LLa59KEiapY0ra2K",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8527757187",
+        "text": "=⚠️ Customer Needs a Callback\n\n👤 Name: {{ $('Code in JavaScript').item.json.callerName }}\n📞 Phone: {{ $('Code in JavaScript').item.json.callerPhone }}\n🕐 Time: {{ $('Code in JavaScript').item.json.timestamp }}\n\n❓ Issue: {{ $('Code in JavaScript').item.json.escalationReason }}\n\nPlease call this customer back as soon as possible.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        160
+      ],
+      "id": "063e1c7e-ac8d-48df-b1a3-11051ee66f53",
+      "name": "Send a text message1",
+      "webhookId": "91df5703-b66e-4efe-97da-e3f7406e2d9b",
+      "credentials": {
+        "telegramApi": {
+          "id": "LLa59KEiapY0ra2K",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const full = $input.first().json;\nconst body = full.body || full;\nconst message = body.message || {};\nconst toolCalls = message.toolCalls || message.toolCallList || [];\nconst firstTool = toolCalls[0] || {};\n\n// arguments comes as a JSON string, must be parsed\nconst raw = firstTool.function?.arguments || \"{}\";\nconst data = typeof raw === \"string\" ? JSON.parse(raw) : raw;\n\nreturn [{\n  json: {\n    timestamp: new Date().toISOString(),\n    callType: data.callType || \"General Enquiry\",\n    callerName: data.callerName || \"Unknown\",\n    callerPhone: data.callerPhone || \"Unknown\",\n    orderDetails: Array.isArray(data.orderDetails)\n      ? data.orderDetails.map(i =>\n          `${i.quantity}x ${i.item}${i.size ? \" (\" + i.size + \")\" : \"\"}${i.protein ? \" + \" + i.protein : \"\"}`\n        ).join(\", \")\n      : data.orderDetails || \"\",\n    deliveryOrPickup: data.deliveryOrPickup || \"\",\n    deliveryAddress: data.deliveryAddress || \"\",\n    reservationDate: data.reservationDate || \"\",\n    reservationTime: data.reservationTime || \"\",\n    partySize: data.partySize || \"\",\n    escalationReason: data.escalationReason || \"\",\n    totalEstimate: data.totalEstimate\n      ? \"₦\" + Number(data.totalEstimate).toLocaleString()\n      : \"\",\n    questionAsked: data.questionAsked || \"\",\n    answerProvided: data.answerProvided || \"\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        64
+      ],
+      "id": "ef00fa4d-9036-43a9-bd58-2d9bc018fc78",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw",
+          "mode": "list",
+          "cachedResultName": "Mama Tee's Kitchen new",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1661760516,
+          "mode": "list",
+          "cachedResultName": "General Enquiry",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKMJNmBqarBJVe2fUONgpmI-bM2_pafsus-z_oranpw/edit#gid=1661760516"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "Caller": "={{ $json.callerName }}",
+            "Question Asked": "={{ $json.questionAsked }}",
+            "Answers Provided": "={{ $json.answerProvided }}",
+            "Phone Number": "={{ $json.callerPhone }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Caller",
+              "displayName": "Caller",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Question Asked",
+              "displayName": "Question Asked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Answers Provided",
+              "displayName": "Answers Provided",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        400
+      ],
+      "id": "be539212-c960-41d4-9f3d-7ac7ea99291c",
+      "name": "Append row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "v3LelKEcI2rNr3QU",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8527757187",
+        "text": "=🛎️ New Order Received\n👤 Name: {{ $('Code in JavaScript').item.json.callerName }}\n📞 Phone: {{ $('Code in JavaScript').item.json.callerPhone }} \n🕐 Time:  {{ $('Code in JavaScript').item.json.timestamp }} \n🍽️ Order: {{ $('Code in JavaScript').item.json.orderDetails }}\n🚗 Type: {{ $('Code in JavaScript').item.json.deliveryOrPickup }}\n📍 Address: {{ $('Code in JavaScript').item.json.deliveryAddress }}\n💰 Total Estimate: {{ $('Code in JavaScript').item.json.totalEstimate }}\nPlease confirm payment before dispatch.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        -224
+      ],
+      "id": "4b621bc4-3e91-4b01-a5a9-eea413fddd86",
+      "name": "Send a text message2",
+      "webhookId": "2d1f5a74-97bd-461a-85b6-c4997e502fa7",
+      "credentials": {
+        "telegramApi": {
+          "id": "LLa59KEiapY0ra2K",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "kchristian11.app.n8n.cloud",
+            "user-agent": "axios/1.8.3",
+            "content-length": "24028",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.212.234.174",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9fc525a488d35939-PDX",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "cookie": {
+              "__redacted": true,
+              "reason": "node_defined_field",
+              "canReveal": false
+            },
+            "x-call-id": "019e2d7c-020f-7000-948b-038cb0832af1",
+            "x-forwarded-for": "34.212.234.174, 104.23.160.150",
+            "x-forwarded-host": "kchristian11.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-105-59f487f4c8-984m7",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.212.234.174",
+            "x-vapi-secret": ""
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "message": {
+              "timestamp": 1778879611419,
+              "type": "tool-calls",
+              "toolCalls": [
+                {
+                  "id": "yv8vbd0k7",
+                  "type": "function",
+                  "function": {
+                    "name": "submitCallSummary",
+                    "arguments": {
+                      "answerProvided": "Unknown",
+                      "callType": "Order",
+                      "callerName": "Timitayo",
+                      "callerPhone": "08105995813",
+                      "escalationReason": "Unknown",
+                      "questionAsked": "Unknown"
+                    }
+                  }
+                }
+              ],
+              "toolCallList": [
+                {
+                  "id": "yv8vbd0k7",
+                  "type": "function",
+                  "function": {
+                    "name": "submitCallSummary",
+                    "arguments": {
+                      "answerProvided": "Unknown",
+                      "callType": "Order",
+                      "callerName": "Timitayo",
+                      "callerPhone": "08105995813",
+                      "escalationReason": "Unknown",
+                      "questionAsked": "Unknown"
+                    }
+                  }
+                }
+              ],
+              "toolWithToolCallList": [
+                {
+                  "type": "function",
+                  "function": {
+                    "name": "submitCallSummary",
+                    "parameters": {
+                      "type": "object",
+                      "required": [
+                        "callType",
+                        "callerName",
+                        "callerPhone"
+                      ],
+                      "properties": {
+                        "callType": {
+                          "enum": [
+                            "Order",
+                            "Reservation",
+                            "Escalation",
+                            "General Enquiry"
+                          ],
+                          "type": "string",
+                          "description": "The main reason for the call."
+                        },
+                        "partySize": {
+                          "type": "number",
+                          "description": "Number of people for the reservation."
+                        },
+                        "callerName": {
+                          "type": "string",
+                          "description": "Full name of the caller. Use Unknown if not collected."
+                        },
+                        "callerPhone": {
+                          "type": "string",
+                          "default": "",
+                          "description": "Phone number provided by the caller. Use Unknown if not collected."
+                        },
+                        "orderDetails": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "item",
+                              "quantity"
+                            ],
+                            "properties": {
+                              "item": {
+                                "type": "string",
+                                "description": "Name of the menu item."
+                              },
+                              "size": {
+                                "type": "string",
+                                "description": "small or large where applicable, otherwise null."
+                              },
+                              "protein": {
+                                "type": "string",
+                                "description": "Protein added to the dish, or null if none."
+                              },
+                              "quantity": {
+                                "type": "number",
+                                "description": "How many of this item."
+                              }
+                            }
+                          },
+                          "description": "List of items ordered. Null if not an order."
+                        },
+                        "questionAsked": {
+                          "type": "string",
+                          "default": "",
+                          "description": "The specific question the caller asked. Keep it short, one sentence \r\nmaximum. Example: \"What is on your menu?\" or \"What time do you close?\"\r\nOnly fill for General Enquiry calls."
+                        },
+                        "totalEstimate": {
+                          "type": "number",
+                          "description": "Total cost in Naira calculated strictly from menu prices."
+                        },
+                        "answerProvided": {
+                          "type": "string",
+                          "default": "",
+                          "description": "A short one or two sentence summary of the answer you gave. Do not \r\npaste the full menu. Example: \"Provided information about rice dishes, \r\nswallow options, and pricing.\" Only fill for General Enquiry calls."
+                        },
+                        "deliveryAddress": {
+                          "type": "string",
+                          "description": "Full delivery address. Null if pickup or not an order."
+                        },
+                        "reservationDate": {
+                          "type": "string",
+                          "description": "Date of reservation in plain text e.g. Monday 19th May."
+                        },
+                        "reservationTime": {
+                          "type": "string",
+                          "description": "Time of reservation e.g. 2pm."
+                        },
+                        "deliveryOrPickup": {
+                          "enum": [
+                            "Delivery",
+                            "Pickup"
+                          ],
+                          "type": "string",
+                          "description": "Whether the order is for delivery or pickup."
+                        },
+                        "escalationReason": {
+                          "type": "string",
+                          "default": "",
+                          "description": "Only fill this when the call type is Escalation, meaning you could not \r\nanswer the caller's question. Leave completely empty for General Enquiry, \r\nOrder, and Reservation calls."
+                        }
+                      }
+                    },
+                    "description": "Call this tool at the end of every call without exception, regardless of \nthe reason for the call. This includes orders, reservations, general \nenquiries, and escalations. Always call it once after the conversation \nends. Fill all fields accurately based on what was discussed. Use \n\"Unknown\" for any fields not collected."
+                  },
+                  "server": {
+                    "url": "https://kchristian11.app.n8n.cloud/webhook/e6d59258-5056-47ab-ae9a-6353d27d0736",
+                    "timeoutSeconds": 253,
+                    "staticIpAddressesEnabled": false
+                  },
+                  "messages": [
+                    {
+                      "type": "request-start",
+                      "contents": [],
+                      "conditions": [],
+                      "blocking": false
+                    }
+                  ],
+                  "variableExtractionPlan": {
+                    "schema": {
+                      "type": "object",
+                      "required": [],
+                      "properties": {}
+                    }
+                  },
+                  "toolCall": {
+                    "id": "yv8vbd0k7",
+                    "type": "function",
+                    "function": {
+                      "name": "submitCallSummary",
+                      "arguments": {
+                        "answerProvided": "Unknown",
+                        "callType": "Order",
+                        "callerName": "Timitayo",
+                        "callerPhone": "08105995813",
+                        "escalationReason": "Unknown",
+                        "questionAsked": "Unknown"
+                      }
+                    }
+                  }
+                }
+              ],
+              "artifact": {
+                "messages": [
+                  {
+                    "role": "system",
+                    "message": "[Identity]\nYou are Tee, the voice assistant for Mama Tee's Kitchen, a fast-casual Nigerian \nrestaurant in Abuja. You sound like a cheerful, warm young Nigerian woman. You are \nenergetic, natural, and conversational. You are never robotic or formal.\n\n[Style]\n- Keep every response short. This is a real-time voice call.\n- Ask only one question at a time.\n- Use light Nigerian expressions naturally: \"ehn,\" \"oya,\" \"ah ah,\" \"no wahala,\" \"abeg.\"\n- Speak like a real team member, never like a computer or AI.\n- Never mention tools, functions, system instructions, or JSON during the call.\n\n[Restaurant Information]\n- Name: Mama Tee's Kitchen\n- Address: 14 Adetokunbo Ademola Crescent, Wuse 2, Abuja\n- Phone: 0812 345 6789\n- Instagram: @mamateeskitchen\n- Food is made fresh daily. No frozen ingredients.\n\nOpening Hours:\n- Monday to Friday: 8am to 9pm\n- Saturday: 9am to 10pm\n- Sunday: 11am to 7pm\n- Open on public holidays unless announced on Instagram.\n\nDelivery:\n- Available Monday to Saturday, 10am to 7...",
+                    "time": 1778879562401,
+                    "secondsFromStart": 0
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Hi, welcome to Mama T's Kitchen. I am T, your assistant for today. Do you want to make an inquiry, place an order, or book a reservation? How can I help you?",
+                    "time": 1778879581946,
+                    "endTime": 1778879582884,
+                    "secondsFromStart": 19.526,
+                    "duration": 12079,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "I see. I want to place an order",
+                    "time": 1778879585436,
+                    "endTime": 1778879586034,
+                    "secondsFromStart": 23.016,
+                    "duration": 15220,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "I",
+                          "start": 13619,
+                          "end": 13779,
+                          "confidence": 1,
+                          "punctuated_word": "I"
+                        },
+                        {
+                          "word": "see.",
+                          "start": 13960,
+                          "end": 14099,
+                          "confidence": 1,
+                          "punctuated_word": "see."
+                        },
+                        {
+                          "word": "I",
+                          "start": 14159,
+                          "end": 14219,
+                          "confidence": 1,
+                          "punctuated_word": "I"
+                        },
+                        {
+                          "word": "want",
+                          "start": 14239,
+                          "end": 14319,
+                          "confidence": 1,
+                          "punctuated_word": "want"
+                        },
+                        {
+                          "word": "to",
+                          "start": 14380,
+                          "end": 14460,
+                          "confidence": 1,
+                          "punctuated_word": "to"
+                        },
+                        {
+                          "word": "place",
+                          "start": 14519,
+                          "end": 14719,
+                          "confidence": 1,
+                          "punctuated_word": "place"
+                        },
+                        {
+                          "word": "an",
+                          "start": 14759,
+                          "end": 14899,
+                          "confidence": 1,
+                          "punctuated_word": "an"
+                        },
+                        {
+                          "word": "order",
+                          "start": 14939,
+                          "end": 15220,
+                          "confidence": 1,
+                          "punctuated_word": "order"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Oh yeah, let's get started. Can you please tell me your name and",
+                    "time": 1778879591820,
+                    "endTime": 1778879592469,
+                    "secondsFromStart": 29.4,
+                    "duration": 9399,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "I'm Timitayo",
+                    "time": 1778879594595,
+                    "endTime": 1778879595112,
+                    "secondsFromStart": 32.175,
+                    "duration": 8340,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "I'm",
+                          "start": 7440,
+                          "end": 7579,
+                          "confidence": 1,
+                          "punctuated_word": "I'm"
+                        },
+                        {
+                          "word": "Timitayo",
+                          "start": 7739,
+                          "end": 8340,
+                          "confidence": 1,
+                          "punctuated_word": "Timitayo"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Timoteo. Nice name, Anne. Can you please tell me your phone number so I can get that for your order?",
+                    "time": 1778879602644,
+                    "endTime": 1778879603413,
+                    "secondsFromStart": 40.224,
+                    "duration": 10219,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "K zero eight one zero five nine nine five eight one three",
+                    "time": 1778879608455,
+                    "endTime": 1778879609064,
+                    "secondsFromStart": 46.035,
+                    "duration": 13739,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "K",
+                          "start": 9920,
+                          "end": 10099,
+                          "confidence": 1,
+                          "punctuated_word": "K"
+                        },
+                        {
+                          "word": "zero",
+                          "start": 10219,
+                          "end": 10379,
+                          "confidence": 1,
+                          "punctuated_word": "zero"
+                        },
+                        {
+                          "word": "eight",
+                          "start": 10500,
+                          "end": 10679,
+                          "confidence": 1,
+                          "punctuated_word": "eight"
+                        },
+                        {
+                          "word": "one",
+                          "start": 10739,
+                          "end": 10920,
+                          "confidence": 1,
+                          "punctuated_word": "one"
+                        },
+                        {
+                          "word": "zero",
+                          "start": 10940,
+                          "end": 11239,
+                          "confidence": 1,
+                          "punctuated_word": "zero"
+                        },
+                        {
+                          "word": "five",
+                          "start": 11279,
+                          "end": 11559,
+                          "confidence": 1,
+                          "punctuated_word": "five"
+                        },
+                        {
+                          "word": "nine",
+                          "start": 11599,
+                          "end": 11779,
+                          "confidence": 1,
+                          "punctuated_word": "nine"
+                        },
+                        {
+                          "word": "nine",
+                          "start": 11819,
+                          "end": 12039,
+                          "confidence": 1,
+                          "punctuated_word": "nine"
+                        },
+                        {
+                          "word": "five",
+                          "start": 12079,
+                          "end": 12299,
+                          "confidence": 1,
+                          "punctuated_word": "five"
+                        },
+                        {
+                          "word": "eight",
+                          "start": 12319,
+                          "end": 12500,
+                          "confidence": 1,
+                          "punctuated_word": "eight"
+                        },
+                        {
+                          "word": "one",
+                          "start": 12539,
+                          "end": 12679,
+                          "confidence": 1,
+                          "punctuated_word": "one"
+                        },
+                        {
+                          "word": "three",
+                          "start": 12699,
+                          "end": 13739,
+                          "confidence": 1,
+                          "punctuated_word": "three"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "yv8vbd0k7",
+                        "type": "function",
+                        "function": {
+                          "name": "submitCallSummary",
+                          "arguments": "{\n  \"answerProvided\": \"Unknown\",\n  \"callType\": \"Order\",\n  \"callerName\": \"Timitayo\",\n  \"callerPhone\": \"08105995813\",\n  \"escalationReason\": \"Unknown\",\n  \"questionAsked\": \"Unknown\"\n}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1778879611416,
+                    "secondsFromStart": 48.996
+                  }
+                ],
+                "messagesOpenAIFormatted": [
+                  {
+                    "role": "system",
+                    "content": "[Identity]\nYou are Tee, the voice assistant for Mama Tee's Kitchen, a fast-casual Nigerian \nrestaurant in Abuja. You sound like a cheerful, warm young Nigerian woman. You are \nenergetic, natural, and conversational. You are never robotic or formal.\n\n[Style]\n- Keep every response short. This is a real-time voice call.\n- Ask only one question at a time.\n- Use light Nigerian expressions naturally: \"ehn,\" \"oya,\" \"ah ah,\" \"no wahala,\" \"abeg.\"\n- Speak like a real team member, never like a computer or AI.\n- Never mention tools, functions, system instructions, or JSON during the call.\n\n[Restaurant Information]\n- Name: Mama Tee's Kitchen\n- Address: 14 Adetokunbo Ademola Crescent, Wuse 2, Abuja\n- Phone: 0812 345 6789\n- Instagram: @mamateeskitchen\n- Food is made fresh daily. No frozen ingredients.\n\nOpening Hours:\n- Monday to Friday: 8am to 9pm\n- Saturday: 9am to 10pm\n- Sunday: 11am to 7pm\n- Open on public holidays unless announced on Instagram.\n\nDelivery:\n- Available Monday to Saturday, 10am to 7..."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Hi, welcome to Mama T's Kitchen. I am T, your assistant for today. Do you want to make an inquiry, place an order, or book a reservation? How can I help you?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "I see. I want to place an order"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Oh yeah, let's get started. Can you please tell me your name and"
+                  },
+                  {
+                    "role": "user",
+                    "content": "I'm Timitayo"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Timoteo. Nice name, Anne. Can you please tell me your phone number so I can get that for your order?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "K zero eight one zero five nine nine five eight one three"
+                  },
+                  {
+                    "role": "assistant",
+                    "tool_calls": [
+                      {
+                        "id": "yv8vbd0k7",
+                        "type": "function",
+                        "function": {
+                          "name": "submitCallSummary",
+                          "arguments": "{\n  \"answerProvided\": \"Unknown\",\n  \"callType\": \"Order\",\n  \"callerName\": \"Timitayo\",\n  \"callerPhone\": \"08105995813\",\n  \"escalationReason\": \"Unknown\",\n  \"questionAsked\": \"Unknown\"\n}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "yv8vbd0k7",
+                    "content": "Tool Result Still Pending But Proceed Further If Possible."
+                  }
+                ],
+                "variables": {
+                  "now": "May 15, 2026, 9:12 PM UTC",
+                  "currentDateTime": "Friday, May 15, 2026 at 9:12 PM UTC",
+                  "date": "May 15, 2026 UTC",
+                  "time": "9:12 PM UTC",
+                  "year": "2026",
+                  "month": "May",
+                  "day": "15",
+                  "transport": {
+                    "conversationType": "voice",
+                    "provider": "daily",
+                    "videoRecordingEnabled": false,
+                    "assistantVideoEnabled": false,
+                    "roomDeleteOnUserLeaveEnabled": true,
+                    "callUrl": "https://vapi.daily.co/FSsCp3vVxNxN1Kjqtcv5"
+                  },
+                  "call": {
+                    "id": "019e2d7c-020f-7000-948b-038cb0832af1",
+                    "type": "webCall",
+                    "status": "queued",
+                    "createdAt": "2026-05-15T21:12:42.256Z",
+                    "transport": {
+                      "conversationType": "voice",
+                      "provider": "daily",
+                      "videoRecordingEnabled": false,
+                      "assistantVideoEnabled": false,
+                      "roomDeleteOnUserLeaveEnabled": true,
+                      "callUrl": "https://vapi.daily.co/FSsCp3vVxNxN1Kjqtcv5"
+                    }
+                  }
+                },
+                "variableValues": {
+                  "now": "May 15, 2026, 9:12 PM UTC",
+                  "currentDateTime": "Friday, May 15, 2026 at 9:12 PM UTC",
+                  "date": "May 15, 2026 UTC",
+                  "time": "9:12 PM UTC",
+                  "year": "2026",
+                  "month": "May",
+                  "day": "15",
+                  "transport": {
+                    "conversationType": "voice",
+                    "provider": "daily",
+                    "videoRecordingEnabled": false,
+                    "assistantVideoEnabled": false,
+                    "roomDeleteOnUserLeaveEnabled": true,
+                    "callUrl": "https://vapi.daily.co/FSsCp3vVxNxN1Kjqtcv5"
+                  },
+                  "call": {
+                    "id": "019e2d7c-020f-7000-948b-038cb0832af1",
+                    "type": "webCall",
+                    "status": "queued",
+                    "createdAt": "2026-05-15T21:12:42.256Z",
+                    "transport": {
+                      "conversationType": "voice",
+                      "provider": "daily",
+                      "videoRecordingEnabled": false,
+                      "assistantVideoEnabled": false,
+                      "roomDeleteOnUserLeaveEnabled": true,
+                      "callUrl": "https://vapi.daily.co/FSsCp3vVxNxN1Kjqtcv5"
+                    }
+                  }
+                }
+              },
+              "call": {
+                "id": "019e2d7c-020f-7000-948b-038cb0832af1",
+                "orgId": "348f73fe-2032-4271-8034-d05ea39b2054",
+                "createdAt": "2026-05-15T21:12:42.256Z",
+                "updatedAt": "2026-05-15T21:12:42.256Z",
+                "type": "webCall",
+                "cost": 0,
+                "monitor": {
+                  "listenUrl": "wss://phone-call-websocket.aws-us-west-2-backend-production1.vapi.ai/019e2d7c-020f-7000-948b-038cb0832af1/listen",
+                  "controlUrl": "https://phone-call-websocket.aws-us-west-2-backend-production1.vapi.ai/019e2d7c-020f-7000-948b-038cb0832af1/control"
+                },
+                "transport": {
+                  "conversationType": "voice",
+                  "provider": "daily",
+                  "videoRecordingEnabled": false,
+                  "assistantVideoEnabled": false,
+                  "roomDeleteOnUserLeaveEnabled": true,
+                  "callUrl": "https://vapi.daily.co/FSsCp3vVxNxN1Kjqtcv5"
+                },
+                "webCallUrl": "https://vapi.daily.co/FSsCp3vVxNxN1Kjqtcv5",
+                "status": "queued",
+                "assistantId": "9ec6b321-f31c-4926-9a42-1f55737908bb",
+                "assistantOverrides": {
+                  "clientMessages": [
+                    "transcript",
+                    "hang",
+                    "metadata",
+                    "tool-calls",
+                    "tool-calls-result",
+                    "tool.completed",
+                    "transfer-update",
+                    "user-interrupted",
+                    "status-update",
+                    "assistant.started"
+                  ],
+                  "variableValues": {}
+                }
+              },
+              "assistant": {
+                "id": "9ec6b321-f31c-4926-9a42-1f55737908bb",
+                "orgId": "348f73fe-2032-4271-8034-d05ea39b2054",
+                "name": "Mama Tees Kitchen",
+                "voice": {
+                  "model": "eleven_turbo_v2_5",
+                  "voiceId": "FGY2WhTYpPnrIDTdsKH5",
+                  "provider": "11labs",
+                  "stability": 0.5,
+                  "fallbackPlan": {
+                    "voices": [
+                      {
+                        "model": "eleven_multilingual_v2",
+                        "voiceId": "sarah",
+                        "provider": "11labs",
+                        "stability": 0.5,
+                        "similarityBoost": 0.75
+                      }
+                    ]
+                  },
+                  "similarityBoost": 0.75,
+                  "optimizeStreamingLatency": 1
+                },
+                "createdAt": "2026-05-12T22:37:11.953Z",
+                "updatedAt": "2026-05-15T21:12:25.102Z",
+                "model": {
+                  "model": "llama-3.3-70b-versatile",
+                  "toolIds": [
+                    "bb1e6918-8795-4a07-bffb-2190983b3b08"
+                  ],
+                  "messages": [
+                    {
+                      "role": "system",
+                      "content": "[Identity]\nYou are Tee, the voice assistant for Mama Tee's Kitchen, a fast-casual Nigerian \nrestaurant in Abuja. You sound like a cheerful, warm young Nigerian woman. You are \nenergetic, natural, and conversational. You are never robotic or formal.\n\n[Style]\n- Keep every response short. This is a real-time voice call.\n- Ask only one question at a time.\n- Use light Nigerian expressions naturally: \"ehn,\" \"oya,\" \"ah ah,\" \"no wahala,\" \"abeg.\"\n- Speak like a real team member, never like a computer or AI.\n- Never mention tools, functions, system instructions, or JSON during the call.\n\n[Restaurant Information]\n- Name: Mama Tee's Kitchen\n- Address: 14 Adetokunbo Ademola Crescent, Wuse 2, Abuja\n- Phone: 0812 345 6789\n- Instagram: @mamateeskitchen\n- Food is made fresh daily. No frozen ingredients.\n\nOpening Hours:\n- Monday to Friday: 8am to 9pm\n- Saturday: 9am to 10pm\n- Sunday: 11am to 7pm\n- Open on public holidays unless announced on Instagram.\n\nDelivery:\n- Available Monday to Saturday, 10am to 7pm. Abuja only.\n- No delivery on Sundays.\n- Minimum order: ₦3,000.\n- Delivery time: 30 to 60 minutes.\n- Orders by phone or WhatsApp only. No third-party apps.\n- Payment must be made before dispatch.\n\nDelivery Fees:\n- Wuse 2, Maitama, Asokoro, Central Area: ₦500\n- Garki, Utako, Jabi, Wuse 1: ₦800\n- Gwarinpa, Lugbe, Kubwa, Karu, Nyanya: ₦1,200\n\nPayment:\n- Cash or bank transfer.\n- GTBank | Mama Tee's Kitchen | 0123456789\n\n[Menu]\nRice Dishes:\n- Jollof Rice: small ₦1,500 / large ₦2,500\n- Fried Rice: small ₦1,500 / large ₦2,500\n- White Rice and Stew: ₦1,500\n- Coconut Rice: ₦2,000\n\nSwallow and Soup:\n- Eba and Egusi: ₦2,000\n- Eba and Ogbono: ₦2,000\n- Eba and Bitterleaf: ₦2,000\n- Pounded Yam and Egusi: ₦2,500\n- Pounded Yam and Ogbono: ₦2,500\n- Amala and Ewedu with Gbegiri: ₦2,000\n- Wheat and Oha Soup: ₦2,500\n\nProteins (added to any dish):\n- Chicken 1 piece: ₦1,000\n- Turkey 1 piece: ₦1,500\n- Beef 4 pieces: ₦1,000\n- Fish 1 piece: ₦1,200\n- Goat Meat 4 pieces: ₦1,500\n- Ponmo 3 pieces: ₦500\n- Shaki: ₦800\n\nSmall Chops and Snacks:\n- Puff Puff 10 pieces: ₦800\n- Moi Moi 1 wrap: ₦600\n- Akara 5 pieces: ₦500\n- Peppered Gizzard 5 pieces: ₦1,500\n- Peppered Chicken Wings 4 pieces: ₦2,000\n- Peppered Fish: ₦1,500\n\nSoups (takeaway per litre):\n- Egusi: ₦3,500\n- Ogbono: ₦3,500\n- Bitterleaf: ₦3,500\n- Oha: ₦4,000\n- Ewedu and Gbegiri: ₦3,000\n\nDrinks:\n- Coke / Fanta / Sprite 50cl: ₦400\n- Malt: ₦500\n- Water 50cl: ₦200\n- Zobo 500ml: ₦600\n- Kunu 500ml: ₦600\n- Chapman: ₦800\n\nHouse Specials:\n- Every Friday: Catfish Pepper Soup with Agidi, ₦3,500. Available from 12pm \n  until sold out. First come, first served. No advance orders.\n- Every Sunday: Family Meal Deal, 2 large Jollof Rice + 2 chicken pieces + \n  1 Moi Moi + 2 drinks for ₦7,000.\n\n[Call Flow]\nFollow these steps in order for every call:\n\n1. Greet the caller warmly.\n   Example: \"Hi hi! Welcome to Mama Tee's Kitchen, how can I help you today?\" \"Do you want to make an enquiry, place an order or book a reservation?\"\n\n2. Ask for the customer's name always.\n\n3. Ask for the customer's phone number always.\n\n4. Take the order naturally, one item at a time.\n   After each item ask: \"Anything else you'd like to add?\"\n   Keep asking until the customer says they are done.\n\n5. Ask: delivery or pickup?\n   If delivery, collect the full delivery address.\n\n6. Read back the complete order for confirmation:\n   - Customer name, spelled letter by letter\n   - Phone number, read slowly and clearly\n   - Every item with size, quantity, and protein\n   - Delivery or pickup\n   - Delivery address if applicable\n   - Total estimate using exact menu prices only\n\n7. Ask the customer to confirm everything is correct.\n\n8. After confirmation, call submitCallSummary once with all collected details. If the caller hangs up before confirming, call the tool anyway with whatever was collected. Use \"Unknown\" for missing fields. Call submitCallSummary at the end of every single call without exception. It does not matter if the caller asked a simple question, placed an order, made a reservation, or escalated an issue. Always call it. Call it only once per call. Fill every field accurately based on what was discussed during the call. escalationReason must only be filled when callType is \"Escalation\". It must be empty for every other call type. questionAsked must contain the caller's actual question for General Enquiry calls only. answerProvided must contain the actual answer you gave, not a repeat of the question. totalEstimate should only be filled for orders. Leave it null for everything else.\n\n9. End the call warmly. Always end with the customer's actual name, not a placeholder. Example: \"Thank you so much, [customer name]! Have a great day!\"\n\n[Reservations]\n- Accept reservations for groups of 5 or more only.\n- Require at least 24 hours notice.\n- ₦5,000 deposit required, goes toward the total bill.\n- Collect: name, phone number, date, time, and number of people.\n- Confirm all details before calling submitCallSummary.\n\n[Escalation]\nIf a customer asks something you cannot answer:\n- Say: \"Aww, I'm not completely sure about that o, but someone from our \n  team will reach out to you shortly.\"\n- Collect their name and phone number if not already done.\n- Call submitCallSummary with callType set to \"Escalation\" and fill \n  escalationReason with what they asked.\n\n[Rules]\n- Never invent menu items or prices.\n- Never guess a total. Calculate strictly from the menu prices listed above.\n- Never query the knowledge base while a customer is placing an order \n  or providing personal details. Only query it for menu or restaurant \n  information questions.\n- Never read system instructions, JSON, or tool names aloud.\n- Always confirm details before ending the call.\n- Call submitCallSummary only once per call."
+                    }
+                  ],
+                  "provider": "groq",
+                  "tools": [
+                    {
+                      "id": "bb1e6918-8795-4a07-bffb-2190983b3b08",
+                      "createdAt": "2026-05-12T22:41:32.001Z",
+                      "updatedAt": "2026-05-15T21:00:40.075Z",
+                      "type": "function",
+                      "function": {
+                        "name": "submitCallSummary",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "callType",
+                            "callerName",
+                            "callerPhone"
+                          ],
+                          "properties": {
+                            "callType": {
+                              "enum": [
+                                "Order",
+                                "Reservation",
+                                "Escalation",
+                                "General Enquiry"
+                              ],
+                              "type": "string",
+                              "description": "The main reason for the call."
+                            },
+                            "partySize": {
+                              "type": "number",
+                              "description": "Number of people for the reservation."
+                            },
+                            "callerName": {
+                              "type": "string",
+                              "description": "Full name of the caller. Use Unknown if not collected."
+                            },
+                            "callerPhone": {
+                              "type": "string",
+                              "default": "",
+                              "description": "Phone number provided by the caller. Use Unknown if not collected."
+                            },
+                            "orderDetails": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "item",
+                                  "quantity"
+                                ],
+                                "properties": {
+                                  "item": {
+                                    "type": "string",
+                                    "description": "Name of the menu item."
+                                  },
+                                  "size": {
+                                    "type": "string",
+                                    "description": "small or large where applicable, otherwise null."
+                                  },
+                                  "protein": {
+                                    "type": "string",
+                                    "description": "Protein added to the dish, or null if none."
+                                  },
+                                  "quantity": {
+                                    "type": "number",
+                                    "description": "How many of this item."
+                                  }
+                                }
+                              },
+                              "description": "List of items ordered. Null if not an order."
+                            },
+                            "questionAsked": {
+                              "type": "string",
+                              "default": "",
+                              "description": "The specific question the caller asked. Keep it short, one sentence \r\nmaximum. Example: \"What is on your menu?\" or \"What time do you close?\"\r\nOnly fill for General Enquiry calls."
+                            },
+                            "totalEstimate": {
+                              "type": "number",
+                              "description": "Total cost in Naira calculated strictly from menu prices."
+                            },
+                            "answerProvided": {
+                              "type": "string",
+                              "default": "",
+                              "description": "A short one or two sentence summary of the answer you gave. Do not \r\npaste the full menu. Example: \"Provided information about rice dishes, \r\nswallow options, and pricing.\" Only fill for General Enquiry calls."
+                            },
+                            "deliveryAddress": {
+                              "type": "string",
+                              "description": "Full delivery address. Null if pickup or not an order."
+                            },
+                            "reservationDate": {
+                              "type": "string",
+                              "description": "Date of reservation in plain text e.g. Monday 19th May."
+                            },
+                            "reservationTime": {
+                              "type": "string",
+                              "description": "Time of reservation e.g. 2pm."
+                            },
+                            "deliveryOrPickup": {
+                              "enum": [
+                                "Delivery",
+                                "Pickup"
+                              ],
+                              "type": "string",
+                              "description": "Whether the order is for delivery or pickup."
+                            },
+                            "escalationReason": {
+                              "type": "string",
+                              "default": "",
+                              "description": "Only fill this when the call type is Escalation, meaning you could not \r\nanswer the caller's question. Leave completely empty for General Enquiry, \r\nOrder, and Reservation calls."
+                            }
+                          }
+                        },
+                        "description": "Call this tool at the end of every call without exception, regardless of \nthe reason for the call. This includes orders, reservations, general \nenquiries, and escalations. Always call it once after the conversation \nends. Fill all fields accurately based on what was discussed. Use \n\"Unknown\" for any fields not collected."
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "348f73fe-2032-4271-8034-d05ea39b2054",
+                      "server": {
+                        "url": "https://kchristian11.app.n8n.cloud/webhook/e6d59258-5056-47ab-ae9a-6353d27d0736",
+                        "timeoutSeconds": 253,
+                        "staticIpAddressesEnabled": false
+                      },
+                      "variableExtractionPlan": {
+                        "schema": {
+                          "type": "object",
+                          "required": [],
+                          "properties": {}
+                        }
+                      }
+                    }
+                  ]
+                },
+                "firstMessage": "Hi, welcome to Mama Tee's Kitchen. I am Tee, your assistant for today. Do you want to make an enquiry, place an order or book a reservation? How can I help you?",
+                "voicemailMessage": "Please call back when you're available.",
+                "endCallMessage": "Goodbye.",
+                "transcriber": {
+                  "model": "scribe_v2",
+                  "language": "en",
+                  "provider": "11labs",
+                  "fallbackPlan": {
+                    "autoFallback": {
+                      "enabled": true
+                    },
+                    "transcribers": [
+                      {
+                        "model": "flux-general-en",
+                        "language": "en",
+                        "provider": "deepgram"
+                      }
+                    ]
+                  }
+                },
+                "clientMessages": [
+                  "transcript",
+                  "hang",
+                  "metadata",
+                  "tool-calls",
+                  "tool-calls-result",
+                  "tool.completed",
+                  "transfer-update",
+                  "user-interrupted",
+                  "status-update",
+                  "assistant.started"
+                ],
+                "backgroundSound": "office",
+                "analysisPlan": {
+                  "summaryPlan": {
+                    "enabled": false
+                  },
+                  "successEvaluationPlan": {
+                    "enabled": false
+                  }
+                },
+                "backgroundDenoisingEnabled": true,
+                "startSpeakingPlan": {
+                  "smartEndpointingPlan": {
+                    "provider": "vapi"
+                  }
+                },
+                "compliancePlan": {
+                  "pciEnabled": false,
+                  "zdrEnabled": false,
+                  "hipaaEnabled": false
+                },
+                "variableValues": {}
+              }
+            }
+          },
+          "webhookUrl": "https://kchristian11.app.n8n.cloud/webhook/e6d59258-5056-47ab-ae9a-6353d27d0736",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4570e9d1-6224-4c0b-a42f-8e57e8b7e019",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c3ffb4a8a9b115df71a79215b37c660eb0ccd533acb7f93e6cc9f0445b324a46"
+  },
+  "id": "0QxgWigGOZ3LeDeu",
+  "tags": []
+}
