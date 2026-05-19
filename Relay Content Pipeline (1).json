@@ -1,0 +1,1298 @@
+{
+  "name": "Relay Content Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Relay: New Content Brief",
+        "formDescription": "We want to post a hot take about meeting culture. Something provocative but grounded — not clickbait, but genuinely useful.\n>\n> The angle we're thinking: most companies say they want async culture, but they don't actually change their meeting habits. They add async tools on top of a meeting-heavy calendar and wonder why it doesn't work.\n",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Client",
+              "placeholder": "Loopin",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Platform",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Linkedin"
+                  },
+                  {
+                    "option": "X (Twitter)"
+                  },
+                  {
+                    "option": "Instagram"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Content Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Thought leadership"
+                  },
+                  {
+                    "option": "Product announcement"
+                  },
+                  {
+                    "option": "Customer story"
+                  },
+                  {
+                    "option": "Culture post"
+                  },
+                  {
+                    "option": "Data post"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Topic Hint",
+              "placeholder": "A seed idea or theme - optional"
+            },
+            {
+              "fieldLabel": "Tone Note",
+              "placeholder": "Any specific tone or framing guidance — optional"
+            },
+            {
+              "fieldLabel": "Context",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What a good output should look like",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -3424,
+        1024
+      ],
+      "id": "ac69fbe1-b407-44f2-b6fd-8ea329300f03",
+      "name": "Brief Intake form",
+      "webhookId": "df79a8da-910a-4653-a506-8c12333c5f59"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ff0dcf10-9059-4807-9ddb-d32d4578e6eb",
+              "name": "brand_name",
+              "value": "Loopin",
+              "type": "string"
+            },
+            {
+              "id": "341cf7ad-4963-4ad4-a5b9-e6068309fd9d",
+              "name": "brand_voice",
+              "value": "Direct, clear,  practical, confident, and human. Short sentences. Active voice. No jargon. Loopin has a clear point of view — state it plainly.",
+              "type": "string"
+            },
+            {
+              "id": "ab74fd3f-e296-4451-a75a-7b17d1752180",
+              "name": "output_channel",
+              "value": "google_sheets",
+              "type": "string"
+            },
+            {
+              "id": "e62cae26-2d98-4046-9eb8-7ba75c07fdd1",
+              "name": "client",
+              "value": "={{ $json.Client }}",
+              "type": "string"
+            },
+            {
+              "id": "a6a8ef3d-55bb-4f1c-a788-821d887951f3",
+              "name": "platform",
+              "value": "={{ $json.Platform }}",
+              "type": "string"
+            },
+            {
+              "id": "8b8d541e-220a-485c-a614-a18e01c5e5e8",
+              "name": "content_type",
+              "value": "={{ $json['Content Type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ecbb6163-2cdb-40bb-9542-b90876b7dee7",
+              "name": "topic_hint",
+              "value": "={{ $json['Topic Hint'] }}",
+              "type": "string"
+            },
+            {
+              "id": "320dea0a-e629-4cee-8f8d-d035eb1382da",
+              "name": "tone_note",
+              "value": "={{ $json['Tone Note'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ec19f5f8-1b6a-4b17-978a-fa9ebe0c6e9f",
+              "name": "lastFeedback",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c0c2f750-99af-409c-944d-550ce69fd853",
+              "name": "Target Audience",
+              "value": "Decision Makers and Team leads Growing SaaS startups",
+              "type": "string"
+            },
+            {
+              "id": "bca07ea8-a490-4fd3-8615-03bf9e60191f",
+              "name": "Key Messages",
+              "value": "Meetings are a default, not a necessity, Async is not slower — it's calmer, Teams that communicate async move faster, Loopin makes async easy",
+              "type": "string"
+            },
+            {
+              "id": "07cf7198-2f5a-42ab-a3fb-ef11c65c39ce",
+              "name": "Language to use",
+              "value": "Async, asynchronous\n- Video update, quick video, short video\n- Team alignment, stay aligned\n- Deep work, focused time\n- Record once, watch anytime\n- Cut the call, skip the meeting\n- On your own schedule\n- Remote-first, hybrid",
+              "type": "string"
+            },
+            {
+              "id": "ac24ffec-3e26-42e6-9cdb-72235570be43",
+              "name": "Language to avoid",
+              "value": "Hop on a call, Quick sync, Touch base, Circle back, leverage, streamline, optimise, utilise, Transform your workflow, and revolutionary game-changing solutions (as a standalone noun), Passive voice where active is possible. ",
+              "type": "string"
+            },
+            {
+              "id": "3f94f842-ad29-4542-aa91-a91b4f9b9991",
+              "name": "Visual identity",
+              "value": "Colours  | Role | Hex | Use |  | Primary | `#5B4AE8` | Main brand colour — buttons, key UI elements, overlays | | Secondary | `#00D9C8` | Accent highlights, icons, supporting elements | | Warm accent | `#FF5A1F` | CTAs, highlights, energy moments | | Light background | `#F3F4F6` | Cards, neutral fills | | Dark | `#111827` | Text on light backgrounds | | White | `#FFFFFF` | Main background |  ### Typography  Headings: Inter Bold or similar geometric sans-serif - \nBody: Inter Regular – Clean and modern. No serif fonts in digital content. ### Image style \nWhat works: - Real people in real work environments (home offices, co-working, casual settings) - Laptop or phone screens - Small teams collaborating - Natural light, neutral tones, clean backgrounds - Close-up of someone recording a short video on their laptop - Abstract illustrations with the brand colour palette (no clip art)  \nWhat to avoid: - Stock photo clichés: people in suits pointing at whiteboards, handshakes, overly staged meetings - Overly bright or saturated photos that feel generic - Crowded group photos that look like corporate stock imagery - Dark or moody aesthetics — this is a calm, clear brand. - Zoom call screenshots or anything that implies meeting culture",
+              "type": "string"
+            },
+            {
+              "id": "7e0c0a7d-d435-43a3-9a60-4cdc1fa5739b",
+              "name": "Platform-specific visual dimensions",
+              "value": "LinkedIn | Single image or carousel | 1200 × 627 px (landscape) or 1080 × 1080 px (square) | \n| X (Twitter) | Single image | 1600 × 900 px (landscape) or 1080 × 1080 px (square) | \n| Instagram | Feed post | 1080 × 1080 px (square) or 1080 × 1350 px (portrait) |",
+              "type": "string"
+            },
+            {
+              "id": "8cdb550a-f0bc-48be-bc34-caaefd219d9f",
+              "name": " Text on images",
+              "value": "Keep it minimal. One headline line maximum. - Use white or `#111827` text depending on the background. - Always leave enough contrast for readability. - Never put small body text directly on a photo background.",
+              "type": "string"
+            },
+            {
+              "id": "06c6081e-a1ea-4c4d-bc0d-f3f0fdfc7ddd",
+              "name": "Composition patterns for AI image generation",
+              "value": "Stat graphic – Use for data-driven posts  - One large number or percentage in the centre - Small label below the number (e.g., \"of an exec's week spent in meetings\") - Loopin wordmark or \"Loopin.co\" in small text at the bottom right - Subtle geometric shape in the background (a circle or horizontal bar in the secondary teal) - Aspect ratio: 1080 × 1080 px (square)  \nProduct screenshot - Use for product updates and feature announcements - Loopin UI mockup (dark mode, as described above) shown on a laptop or monitor - Placed at an angle (3/4 view) on a light background (`#F3F4F6\") with subtle shadow - One short text line at the top: the feature name or benefit - Aspect ratio: 1200 × 627 px (landscape for LinkedIn) and 1080 × 1080 (square) \nPeople/culture photo - Use for team culture posts - Real-looking photo aesthetic - Natural light, neutral tones, warm but not oversaturated - Optional overlay: thin colour block in primary purple with a 1–2 word label (e.g., \"async first\") - Aspect ratio: 1080 × 1080 px or 1080 × 1350 px portrait  Carousel slide - Use for how-to and multi-step posts - Slide 1: Title slide — large bold text on primary purple background, white text, secondary teal accent line at the bottom - Slides 2–N: White background, numbered heading in primary purple, 2–3 lines of body text in dark grey, optional small icon or illustration on the right - Slide N+1 (final): CTA slide — same style as title slide - Aspect ratio: 1080 × 1080 px per slide",
+              "type": "string"
+            },
+            {
+              "id": "ff232839-a11f-446e-a340-0768d4a0e84b",
+              "name": "Brand do's and don'ts",
+              "value": "Do | Don't Take a clear side (async > sync) | Don't hedge or try to appeal to everyone | Use real numbers when possible | Don't make vague claims without evidence | Address one idea per post | Don't try to say everything at once | Write for the decision-maker who agrees | Don't write for the sceptic who needs convincing | Show, don't tell (product screenshots, results) | Don't Just tell people what Loopin does. | Write how a smart person talks. | Don't write how a marketing deck reads. |",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3200,
+        1024
+      ],
+      "id": "3521545b-0fd0-4b56-867b-254ea5209179",
+      "name": "Config--Brand + Brief1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the brief for this content run.\n\nCLIENT\nName: {{ $json.client }}\nBrand voice: {{ $json.brand_voice }}\nKey messages: {{ $json['Key Messages'] }}\nTarget audience: {{ $json['Target Audience'] }}\nLanguage to avoid: {{ $json['Language to avoid'] }}\nLanguage to use:{{ $json['Language to use'] }}\nBRIEF\nPlatform: {{ $json.platform }}\nContent type: {{ $json.content_type }}\nTopic hint: {{ $json.topic_hint }}\nTone note: {{ $json.tone_note }}\n\n{% if $json.lastFeedback %}\nREVISION FEEDBACK — READ THIS FIRST\n\nThe previous angles were rejected by the human reviewer. Your next output must directly address this feedback. Do not produce the same type of angles that were rejected.\n\nReviewer's notes: {{ $json.lastFeedback }}\n{% endif %}\n\nPropose 3 content angle options for a {{ $json.platform }} {{ $json.content_type }} post for {{ $json.client }}. Follow your output format exactly.",
+        "options": {
+          "systemMessage": "=You are Sofia, a senior content strategist at Relay, a social media agency.\n\nRelay works with ambitious brands who want content that is specific, credible, and platform-native — not generic marketing copy. Your job is to think strategically about what a brand should say, to whom, and why it will land on a given platform.\n\nYour role in the pipeline is to propose content angle options for a human strategist to review. You do not write the post — you propose the strategic direction. A human will always make the final call on which angle to pursue.\n\nRULES YOU ALWAYS FOLLOW\n\n- Never produce angles that are generic or interchangeable across brands. Every angle must feel specific to the client, their audience, and the platform.\n- Never hedge. If the brief is open, take a clear strategic stance. Vague angles are not useful.\n- Never include preamble, sign-offs, or commentary outside the required output format.\n- Always produce exactly 3 angles — no more, no fewer.\n- Always write rationales that explain the strategic logic, not just describe what the post will say.\n- If you receive revision feedback, treat it as a hard constraint. Do not repeat angle types that were explicitly rejected.\n\nOUTPUT FORMAT — ALWAYS USE THIS EXACT STRUCTURE\n\nAngle 1: [Title — max 10 words]\nRationale: [2–3 sentences explaining why this angle fits the brief, the platform, and the brand]\n\nAngle 2: [Title — max 10 words]\nRationale: [2–3 sentences]\n\nAngle 3: [Title — max 10 words]\nRationale: [2–3 sentences]."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2976,
+        832
+      ],
+      "id": "1c4a9e76-8690-41bb-af6b-94007b95d902",
+      "name": "Sofia - Research"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-v4-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2912,
+        1248
+      ],
+      "id": "372704db-68ee-4348-9574-761b1357ffe3",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aiSiivFG52ESYntD",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "94ed77c2-9490-480d-abeb-091333adaf71",
+              "name": "Sofia_angles",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2624,
+        832
+      ],
+      "id": "7d726e53-da9a-4ca9-bea2-d2b2f1e5ed07",
+      "name": "Sofia - Saves Angles"
+    },
+    {
+      "parameters": {
+        "resume": "form",
+        "formTitle": "Sofia review content angles",
+        "formDescription": "=**Brief:** {{ $('Config--Brand + Brief1').item.json.client }} · {{ $('Config--Brand + Brief1').item.json.platform }}· {{ $('Config--Brand + Brief1').item.json.content_type }}\n**Topic hint:** {{ $json.topic_hint || '(none)' }}\n\n---\n\n**Proposed angles:**\n{{ $json.Sofia_angles }}\n\nApprove one angle to send to Marcus, or request new angles with notes.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Decision",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Approve - send to Marcus"
+                  },
+                  {
+                    "option": "Revise- request new angles"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Approved angle",
+              "placeholder": "If approving: paste the angle title or describe the chosen direction."
+            },
+            {
+              "fieldLabel": "Revision notes",
+              "placeholder": "If revising: what should be different? What angle should Sofia explore instead?"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2400,
+        832
+      ],
+      "id": "59170879-838f-48b1-8501-696b70c26f8b",
+      "name": "Wait",
+      "webhookId": "7206fe83-3e2b-4bc9-95b1-1a8a51f3478a"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Decision }}",
+                    "rightValue": "Approve - send to Marcus",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e4019720-5462-4ab0-a534-c926a39289cf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approve"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f25f802a-27d3-4b5f-ae8b-0b7d63a8d95e",
+                    "leftValue": "={{ $json.Decision }}",
+                    "rightValue": "Revise- request new angles",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Revise"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1952,
+        832
+      ],
+      "id": "a5ba4b0c-b07f-4ce8-802d-9ed4d9894696",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "085831c9-283e-43bb-9289-121e93c9a77a",
+              "name": "lastFeedback",
+              "value": "={{ $json['Revision notes'] || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1920,
+        1216
+      ],
+      "id": "95f1c1fc-53b4-4ce9-842d-de6ae2dd761e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nfunction cleanText(text) {\n  if (!text) return \"\";\n  \n  return text\n    // Remove asterisks\n    .replace(/\\*/g, \"\")\n    // Remove standalone dashes (bullets/separators, not hyphens in words)\n    .replace(/(?<!\\w)-(?!\\w)/g, \"\")\n    // Remove excessive blank lines\n    .replace(/\\n{3,}/g, \"\\n\\n\")\n    // Trim whitespace per line\n    .split(\"\\n\").map(line => line.trim()).join(\"\\n\")\n    // Fix missing space after punctuation\n    .replace(/([.!?])([A-Z])/g, \"$1 $2\")\n    // Fix double spaces\n    .replace(/ {2,}/g, \" \")\n    // Capitalize first letter\n    .replace(/^[a-z]/, c => c.toUpperCase())\n    // Trim overall\n    .trim();\n}\n\nreturn [{\n  json: {\n    ...input,\n    postCopy: cleanText(input.postCopy),\n    approvedAngle: cleanText(input.approvedAngle),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2176,
+        832
+      ],
+      "id": "2fb82ba4-32d0-4f1f-aa82-146cf2b865be",
+      "name": "Clean writeup"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the approved angle and all context you need to produce the post.\n\nCLIENT\nName: {{ $('Config--Brand + Brief1').item.json.client }}\nBrand voice: {{ $('Config--Brand + Brief1').item.json.brand_voice }}\nPlatform tone: {{ $('Config--Brand + Brief1').item.json.platform }}\nKey messages: {{ $('Config--Brand + Brief1').item.json['Key Messages'] }}\nTarget audience: {{ $('Config--Brand + Brief1').item.json['Target Audience'] }}\nLanguage to avoid: {{ $('Config--Brand + Brief1').item.json['Language to avoid'] }}\nLanguage to use:{{ $('Config--Brand + Brief1').item.json['Language to use'] }}\nVisual identity: {{ $('Config--Brand + Brief1').item.json['Visual identity'] }}\nImage composition patterns: {{ $('Config--Brand + Brief1').item.json['Composition patterns for AI image generation'] }}\n\nPLATFORM SPECS — {{ $json.platform | upcase }} {{ $('Config--Brand + Brief1').item.json['Platform-specific visual dimensions'] }}\n\n\nAPPROVED ANGLE\n{{ $json.approvedAngle }}\n\nORIGINAL BRIEF\nPlatform: {{ $('Config--Brand + Brief1').item.json.platform }}\nContent type:{{ $('Config--Brand + Brief1').item.json.content_type }}\nTopic hint:{{ $('Config--Brand + Brief1').item.json.topic_hint }}\nTone note: {{ $('Config--Brand + Brief1').item.json.tone_note }}\n\n{% if $json.lastFeedback %}\nREVISION FEEDBACK — READ THIS FIRST\n\nThe previous version was rejected by the human creative director. Your new version must address every point in this feedback. Do not reproduce anything that was specifically called out.\n\nReviewer's notes:{{ $('Config--Brand + Brief1').item.json.lastFeedback }}\n{% endif %}\n\nWrite the post copy and image direction for a {{ $('Config--Brand + Brief1').item.json.platform }} {{ $('Config--Brand + Brief1').item.json.content_type }} post for {{ $('Config--Brand + Brief1').item.json.client }}. Follow your output format exactly.\n\nAlso produce a single-paragraph image generation prompt optimised for DALL-E 3. It should translate the image direction into natural, descriptive language that an image model can act on directly. No field labels, no structure — just one flowing paragraph describing the image as if you are briefing a photographer.\n\nAdd it to your output under this heading:\n\nIMAGE PROMPT\n[One paragraph, natural language, DALL-E 3 optimised]",
+        "options": {
+          "systemMessage": "=You are Marcus, a senior creative at Relay, a social media agency.\n\nYour job is to take an approved strategic angle and turn it into two things: polished post copy and a detailed visual direction. Both will be reviewed by a human creative director before anything is published.\n\nYou write copy that sounds like it came from a smart, senior person inside the client's company — not from a marketing agency. You do not write in a generic brand voice. You write in the client's specific voice, for their specific audience, on their specific platform.\n\nRULES YOU ALWAYS FOLLOW\n\nCopy:\n- Always stay within the platform's character limit. If you are unsure, write shorter.\n- Always use the client's voice, not generic agency language.\n- Never use words or phrases on the client's avoid list.\n- Always include hashtags and formatting appropriate for the platform within the allowed count.\n- Write as if a founder or senior team member wrote the post—authoritative, human, specific.\n\nVisual direction:\n- Always describe the image in enough detail that a designer or image generation model can produce it without asking a single follow-up question.\n- Always reference the client's visual identity — their colours, typography, and composition patterns.\n- Always specify the subject, setting, colour palette, mood, text overlay (if any), and aspect ratio.\n- The image must feel native to the platform, not like a stock photo.\n\nGeneral:\n- Never include preamble, sign-offs, or commentary outside the required output format.\n- If you receive revision feedback, treat it as a hard constraint. Do not reproduce anything that was specifically called out and rejected.\n\nOUTPUT FORMAT — ALWAYS USE THIS EXACT STRUCTURE\n\nPOST COPY\n[Full post copy, formatted for the platform, including hashtags]\n\nIMAGE DIRECTION\nSubject: [What is shown]\nSetting: [Background or environment]\nColour palette: [Specific colours from the brand guide]\nMood: [The feeling the image should convey]\nText overlay: [Any text on the image, or \"None\"]\nAspect ratio: [Correct ratio for the platform]\nAdditional notes: [Anything else the designer or image model needs]\nIMAGE PROMPT\n[One flowing paragraph describing the image in natural language, written for an image generation model. No labels or structure — pure description.]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1728,
+        432
+      ],
+      "id": "3420565d-bf3d-4c3e-a06e-f27b99ae21b0",
+      "name": "Marcus- Creative agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-v4-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1664,
+        656
+      ],
+      "id": "bdf7bef1-9854-49d7-a469-788416ad4e8d",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aiSiivFG52ESYntD",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nfunction cleanText(text) {\n  if (!text) return \"\";\n  \n  return text\n    // Remove asterisks\n    .replace(/\\*/g, \"\")\n    // Remove standalone dashes (bullets/separators, not hyphens in words)\n    .replace(/(?<!\\w)-(?!\\w)/g, \"\")\n    // Remove excessive blank lines\n    .replace(/\\n{3,}/g, \"\\n\\n\")\n    // Trim whitespace per line\n    .split(\"\\n\").map(line => line.trim()).join(\"\\n\")\n    // Fix missing space after punctuation\n    .replace(/([.!?])([A-Z])/g, \"$1 $2\")\n    // Fix double spaces\n    .replace(/ {2,}/g, \" \")\n    // Capitalize first letter\n    .replace(/^[a-z]/, c => c.toUpperCase())\n    // Trim overall\n    .trim();\n}\n\nreturn [{\n  json: {\n    ...input,\n    postCopy: cleanText(input.postCopy),\n    approvedAngle: cleanText(input.approvedAngle),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        352
+      ],
+      "id": "c372b62f-dc46-4173-881a-585ca042fb13",
+      "name": "Clean writeup1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "acbb528f-49da-492b-a4f3-11e5f52bc1ce",
+              "leftValue": "={{ $json.Decision }}",
+              "rightValue": "=Approve Copy, Send to Taylor",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        352
+      ],
+      "id": "02dcf93d-43d8-49fd-a9d2-a908c900e9e1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resume": "form",
+        "formTitle": "Marcus - Copy angle Review",
+        "formDescription": "=**Brief:** {{ $('Config--Brand + Brief1').item.json.client }} · {{ $('Config--Brand + Brief1').item.json.platform }} · {{ $('Config--Brand + Brief1').item.json.content_type }}\nCopy - {{ $('FOR IMAGE').item.json.postCopy }}\nImage - {{ $json.imagePrompt }}",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Decision",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Approve Copy, Send to Taylor"
+                  },
+                  {
+                    "option": "Reviwe - Revise"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Revision Notes",
+              "fieldType": "textarea",
+              "placeholder": "If revising: what should be different? What angle should Sofia explore instead?"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -576,
+        352
+      ],
+      "id": "cc672414-b85c-4668-9c24-128b8c684585",
+      "name": "Wait1",
+      "webhookId": "dfb13bed-54f6-4e91-be64-cf040634f43e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "085831c9-283e-43bb-9289-121e93c9a77a",
+              "name": "lastFeedback",
+              "value": "={{ $('Wait1').item.json['Revision Notes'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        688
+      ],
+      "id": "7e585cb5-2632-4493-8fc4-95e688f24845",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the completed post for review.\n\nCLIENT\nName: {{ $('Config--Brand + Brief1').item.json.client }}\nBrand voice: {{ $('Config--Brand + Brief1').item.json.brand_voice }}\nKey messages: {{ $('Config--Brand + Brief1').item.json['Key Messages'] }}\nTarget audience: {{ $('Config--Brand + Brief1').item.json['Target Audience'] }}\nLanguage to avoid:{{ $('Config--Brand + Brief1').item.json['Language to avoid'] }}\nVisual identity: {{ $('Config--Brand + Brief1').item.json['Visual identity'] }}\nPLATFORM SPECS — {{ $json.platform | upcase }}{{ $('Config--Brand + Brief1').item.json['Platform-specific visual dimensions'] }}\n\n\nORIGINAL BRIEF\nPlatform: {{ $('Config--Brand + Brief1').item.json.platform }}\nContent type: {{ $('Config--Brand + Brief1').item.json.content_type }}\nTopic hint:{{ $('Config--Brand + Brief1').item.json.topic_hint }}\nTone note: {{ $('Config--Brand + Brief1').item.json.tone_note }}\n\nPOST TO REVIEW\n\nCopy:{{ $('FOR IMAGE').item.json.postCopy }}\n\n\nImage direction:{{ $('FOR IMAGE').item.json.imagePrompt }}\n\n\nReview this post against the brief, brand guide, and platform specs. Follow your output format exactly.",
+        "options": {
+          "systemMessage": "=You are Taylor, a senior content reviewer at Relay, a social media agency.\n\nYour job is to review completed social media posts before they go live. You are the last quality gate before a human makes the final approval decision.\n\nYou do not make the final decision — a human reviewer does. Your job is to give that reviewer the clearest, most specific picture of what is in the post, what works, what does not, and why — so they can make a fast, confident, informed call.\n\nWHAT YOU ALWAYS CHECK\n\n1. Brief alignment — Does the post match the original content type and topic? Does it do what was asked?\n2. Brand fit — Does the copy sound like the client? Does it use their voice and tone? Does it avoid their language avoid list?\n3. Platform compliance — Is the copy within the character limit? Are hashtags within the allowed count? Is the image the right aspect ratio and format?\n4. Audience relevance — Will this genuinely resonate with the client's audience on this platform?\n5. Publishability — Is this ready to go live with no or minimal edits?\n\nHOW YOU REPORT ISSUES\n\nBe specific. Never say \"the post is too long.\" Say: \"Post is 2,340 characters. LinkedIn optimal range is 900–1,300 characters — this is 1,040 characters over.\"\n\nNever say \"the tone is off.\" Say: \"The phrase 'game-changing solution' appears twice. This is on the client's avoid list.\"\n\nIf there are no issues, say: \"No issues found.\" Do not invent problems.\n\nYOUR RECOMMENDATION OPTIONS\n\nYou always end with exactly one of these three recommendations:\n- Approve — ready to publish\n- Send back to Marcus — copy or image needs revision (you must specify exactly what)\n- Reject to Sofia — the angle itself is the problem and the post needs to be rebuilt from strategy (you must explain why the angle failed, not just the execution)\n\nRULES YOU ALWAYS FOLLOW\n\n- Never make the final decision. Your recommendation is a suggestion for the human reviewer.\n- Never include preamble, sign-offs, or commentary outside the required output format.\n- Always be specific. Cite the actual text, the actual character count, the actual spec.\n\nOUTPUT FORMAT — ALWAYS USE THIS EXACT STRUCTURE\n\nSUMMARY\n[2–3 sentences describing what the post says and what it is trying to achieve]\n\nQUALITY FLAGS\n[Numbered list of specific issues with evidence and spec references. Or: \"No issues found.\"]\n\nRECOMMENDATION\n[One of the three options above, followed by 1–2 sentences explaining why]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        96
+      ],
+      "id": "fc60eff1-9c58-4e05-a3b3-2226b1ee0197",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-chat-v3.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        320
+      ],
+      "id": "e9cab76c-6d35-4b12-8bc3-4064f774d6ce",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aiSiivFG52ESYntD",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "form",
+        "formTitle": "Taylor Review - Final Approval",
+        "formDescription": "Review the AI quality report below and make the final call on this post.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "AI Summary",
+              "placeholder": "=",
+              "defaultValue": "={{ $json.Summary }}"
+            },
+            {
+              "fieldLabel": "Quality Flags",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "No Flags Detected"
+                  },
+                  {
+                    "option": "Flags Detected"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": " Post Copy",
+              "placeholder": "=",
+              "defaultValue": "={{ $('Clean writeup1').item.json.output }}"
+            },
+            {
+              "fieldLabel": " Decision",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Approve — ready to publish"
+                  },
+                  {
+                    "option": "Send back to Marcus — copy or image needs work"
+                  },
+                  {
+                    "option": "Reject to Sofia — angle needs to be rebuilt"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Revision Notes",
+              "fieldType": "textarea",
+              "placeholder": "If sending back or rejecting, explain what needs to change. Be specific — this goes directly into the next AI prompt."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        208
+      ],
+      "id": "3dea8e63-a015-4709-befd-c09e72105654",
+      "name": "Wait2",
+      "webhookId": "5c4363ef-1619-4250-bcd8-289b53cde07a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d4552a4-ebef-4852-9748-ffc897dd6b75",
+              "name": "Summary",
+              "value": "=This post reframes meeting costs from time spent to productivity lost by highlighting the disruption to deep work, positioning Loopin as a solution for protecting focus through fewer, more intentional meetings. It aims to resonate with professionals frustrated by unproductive meetings and attract those valuing asynchronous",
+              "type": "string"
+            },
+            {
+              "id": "f9a14da6-8f31-4ac3-9020-c9ea2d60ba99",
+              "name": "Quality Flags",
+              "value": "No flags Detected",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        208
+      ],
+      "id": "da2d7da6-2524-4795-b09e-401de904c89b",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[' Decision'] }}",
+                    "rightValue": "Approve — ready to publish",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fbfd2f89-fec1-4fff-b34f-69010ed0819d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fca72b88-d75e-4268-9e19-4c6f08a52abf",
+                    "leftValue": "={{ $json[' Decision'] }}",
+                    "rightValue": "Send back to Marcus — copy or image needs work",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "561ab288-d702-41b9-bc93-31cb040ec36c",
+                    "leftValue": "={{ $json[' Decision'] }}",
+                    "rightValue": "Reject to Sofia — angle needs to be rebuilt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        192
+      ],
+      "id": "77a1ebab-d2e4-41ba-8325-776696bf5dd3",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "085831c9-283e-43bb-9289-121e93c9a77a",
+              "name": "lastFeedback",
+              "value": "={{ $('Wait2').item.json['Revision Notes'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        976
+      ],
+      "id": "17298854-74b2-4300-ab23-fe9bfd8e144b",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "085831c9-283e-43bb-9289-121e93c9a77a",
+              "name": "lastFeedback",
+              "value": "={{ $('Wait2').item.json['Revision Notes'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        1280
+      ],
+      "id": "19d2507c-2d7a-404d-bef7-c0af1bc41de0",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Jk2E2lxeHpM0iXdAszSyhS5bcbmXOHvDgH7-lnmHWuQ",
+          "mode": "list",
+          "cachedResultName": "Relay/Loopin Ready to Publish post sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Jk2E2lxeHpM0iXdAszSyhS5bcbmXOHvDgH7-lnmHWuQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Jk2E2lxeHpM0iXdAszSyhS5bcbmXOHvDgH7-lnmHWuQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $('Config--Brand + Brief1').item.json.client }}",
+            "Platform": "={{ $('Config--Brand + Brief1').item.json.platform }}",
+            "Brand voice": "={{ $('Config--Brand + Brief1').item.json.brand_voice }}",
+            "Approval": "={{ $json[' Decision'] }}",
+            "Topic": "={{ $('Config--Brand + Brief1').item.json.topic_hint }}"
+          },
+          "matchingColumns": [
+            "Client Name"
+          ],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Brand voice",
+              "displayName": "Brand voice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Approval",
+              "displayName": "Approval",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        160
+      ],
+      "id": "1b5352cf-c760-491c-9c66-89b04ac5922f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        576
+      ],
+      "id": "662ceb5a-d8b4-4ecc-a2e0-5f0f955fe570",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aiSiivFG52ESYntD",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nlet text = input.postCopy || input.output || \"\"\n\n// ── 1. Extract IMAGE PROMPT section ──────────────────────────────\nconst imageSplit = text.match(/IMAGE PROMPT\\s*\\n([\\s\\S]+?)$/i);\nconst imagePrompt = imageSplit ? imageSplit[1].trim() : \"\";\n\n// ── 2. Remove IMAGE PROMPT block from postCopy ───────────────────\nlet cleanedCopy = text.replace(/IMAGE PROMPT\\s*\\n[\\s\\S]+$/i, \"\").trim();\n\n// ── 3. Clean the copy (your existing cleaning logic) ─────────────\nfunction cleanText(t) {\n  if (!t) return \"\";\n  return t\n    .replace(/\\*/g, \"\")                          // remove asterisks\n    .replace(/(?<!\\w)-(?!\\w)/g, \"\")              // remove standalone dashes\n    .replace(/\\n{3,}/g, \"\\n\\n\")                  // collapse excess blank lines\n    .split(\"\\n\").map(l => l.trim()).join(\"\\n\")    // trim each line\n    .replace(/([.!?])([A-Z])/g, \"$1 $2\")         // space after punctuation\n    .replace(/ {2,}/g, \" \")                      // remove double spaces\n    .replace(/^[a-z]/, c => c.toUpperCase())     // capitalize first letter\n    .trim();\n}\n\ncleanedCopy = cleanText(cleanedCopy);\n\nreturn [{\n  json: {\n    ...input,\n    postCopy: cleanedCopy,      // clean copy only, no image prompt block\n    imagePrompt: imagePrompt,   // extracted, ready for DALL-E node\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        352
+      ],
+      "id": "0c47d99d-3928-45fd-a5ee-febf553b3ab7",
+      "name": "FOR IMAGE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e58b823d-3091-49e7-b7aa-6ebb6c557837",
+              "name": "imagePrompt",
+              "value": "Pending generation. Prompt ready  for designers",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        352
+      ],
+      "id": "fa5019b0-8f02-4bfd-ad5e-f23f97c3a3dd",
+      "name": "Image prompt"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Brief Intake form": {
+      "main": [
+        [
+          {
+            "node": "Config--Brand + Brief1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config--Brand + Brief1": {
+      "main": [
+        [
+          {
+            "node": "Sofia - Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sofia - Research",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sofia - Research": {
+      "main": [
+        [
+          {
+            "node": "Sofia - Saves Angles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sofia - Saves Angles": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Clean writeup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Marcus- Creative agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Sofia - Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean writeup": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Marcus- Creative agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcus- Creative agent": {
+      "main": [
+        [
+          {
+            "node": "Clean writeup1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean writeup1": {
+      "main": [
+        [
+          {
+            "node": "FOR IMAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Marcus- Creative agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Sofia - Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Marcus- Creative agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "FOR IMAGE": {
+      "main": [
+        [
+          {
+            "node": "Image prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image prompt": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d90d3ae9-b2c8-4f6a-ab9f-9cb6e02b481f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "id": "MX322MIHJ6OWznbq",
+  "tags": []
+}
