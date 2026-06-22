@@ -1,0 +1,304 @@
+{
+  "name": "Edgeco engine",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fp2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bde22a5b-e0f5-4bd8-9b57-2f62af34d067",
+      "name": "Webhook",
+      "webhookId": "f7264175-a45b-42b1-a8e9-dba9fda51442"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    jobTitle:        $input.first().json.body.job_title        || \"\",\n    jobLocation:     $input.first().json.body.location_focus   || \"\",\n    experience:      $input.first().json.body.experience_level || \"\",\n    techStack:       Array.isArray($input.first().json.body.tech_stack)        ? $input.first().json.body.tech_stack        : [],\n    industry:        $input.first().json.body.industry_preference              || \"\",\n    excludeIndustry: Array.isArray($input.first().json.body.exclude_industry)  ? $input.first().json.body.exclude_industry  : [],\n    employmentType:  $input.first().json.body.employment_type  || \"\",\n    jobBoards:       Array.isArray($input.first().json.body.job_boards)        ? $input.first().json.body.job_boards        : []\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "6e913dc3-38ec-428b-aa32-41cb0cc25782",
+      "name": "Set Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst formatValue = (value) => {\n  if (Array.isArray(value)) return value.length ? value.join(\", \") : \"\";\n  return value ?? \"\";\n};\n\nconst skipKeys = new Set([\"jobBoards\", \"Userprompt\"]);\nconst criteria = Object.entries(input)\n  .filter(([key, value]) => {\n    if (skipKeys.has(key)) return false;\n    if (value === undefined || value === null || value === \"\") return false;\n    if (Array.isArray(value) && value.length === 0) return false;\n    return true;\n  })\n  .map(([key, value]) => {\n    const cleanKey = key.replace(/([A-Z])/g, \" $1\").replace(/^./, s => s.toUpperCase()).trim();\n    return `- ${cleanKey}: ${formatValue(value)}`;\n  })\n  .join(\"\\n\");\n\nconst boardPatterns = {\n  linkedin:         \"site:linkedin.com/jobs\",\n  indeed:           \"site:indeed.com\",\n  greenhouse:       \"site:boards.greenhouse.io\",\n  lever:            \"site:jobs.lever.co\",\n  wellfound:        \"site:wellfound.com/jobs\",\n  remotive:         \"site:remotive.com/remote-jobs\",\n  workable:         \"site:apply.workable.com\",\n  ashby:            \"site:jobs.ashbyhq.com\",\n  simplyhired:      \"site:simplyhired.com\",\n  ziprecruiter:     \"site:ziprecruiter.com/jobs\",\n  remoterocketship: \"site:remoterocketship.com\",\n  weworkremotely:   \"site:weworkremotely.com\",\n  ycombinator:      \"site:workatastartup.com\"\n};\n\nconst jobBoards = Array.isArray(input.jobBoards) ? input.jobBoards : [];\nif (jobBoards.length === 0) {\n  console.warn(\"Warning: jobBoards array is empty.\");\n  return [{ json: { ...input, Userprompt: \"No job boards to search. Please check input data.\" } }];\n}\n\nconst boardInstructions = jobBoards.map((board, i) => {\n  const key = board.toLowerCase().trim();\n  const siteFilter = boardPatterns[key] || `site:${key}`;\n  return `Board ${i + 1} - ${board}:\\n  Search query: \"${input.jobTitle}\" ${siteFilter}\\n  Scrape each result URL and return up to 5 listings. Record all available fields including salary, full job description, and the direct application link.`;\n}).join(\"\\n\\n\");\n\nconst Userprompt = `Search each job board below separately using Firecrawl.\\n\\nFor each board:\\n1. Run the search query provided\\n2. Scrape each result URL to get FULL listing details including job description, salary, requirements, and the direct application link\\n3. Return up to 5 listings per board\\n\\nJob criteria to match against:\\n${criteria || \"(No criteria specified - return best available matches)\"}\\n\\nJob boards to search:\\n${boardInstructions}`;\n\nreturn [{ json: { ...input, Userprompt } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "c3d960d7-4508-4c99-b2a9-6325cafde571",
+      "name": "Build Search Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Userprompt }}",
+        "options": {
+          "systemMessage": "You are a job search agent. Search the requested job boards using Firecrawl and return results as a JSON object with a 'companies' array. Each item in the array must have: companyName, roleTitle, jobLocation, employmentType, techStack (array), salary, jobDescription, applicationLink, postedDate, source. When calling firecrawl_scrape, always use \"formats\": [\"markdown\"] only. Do not request JSON format. After receiving the markdown content, extract job listings yourself and format your final answer according to the required output schema.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "b044067f-5c2e-41a8-a29c-8ec943311d14",
+      "name": "Job Search Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = items[0].json.output;\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  const match = raw.match(/```(?:json)?\\s*([\\s\\S]*?)```/s);\n  if (match) {\n    try { parsed = JSON.parse(match[1].trim()); }\n    catch (e) { throw new Error('Parse Companies: Invalid JSON - ' + err.message); }\n  } else {\n    throw new Error('Parse Companies: Invalid JSON - ' + err.message);\n  }\n}\n\nconst companies = parsed.companies || [];\nif (!parsed.companies || parsed.companies.length === 0) {\n  parsed.companies = [];\n}\n\nreturn companies.map(c => ({\n  json: {\n    companyName:     c.companyName     || '',\n    roleTitle:       c.roleTitle       || '',\n    jobLocation:     c.jobLocation     || '',\n    employmentType:  c.employmentType  || '',\n    techStack:       c.techStack       || [],\n    salary:          c.salary          || '',\n    jobDescription:  c.jobDescription  || '',\n    applicationLink: c.applicationLink || c.link || '',\n    postedDate:      c.postedDate      || '',\n    source:          c.source          || ''\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "ce3793b4-56fe-46a0-b7a9-6bdd73d7fb09",
+      "name": "Parse Companies",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "companies",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "f275706a-4577-4969-b88e-ae2dd679051f",
+      "name": "Aggregate Results"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "a4cb129b-0b9f-4cf0-adf0-d4cdb72583f1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        208
+      ],
+      "id": "df0afc90-9eaa-4efc-a40c-505ce74e3bad",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "m7ZIxzWXVoi63KZZ",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.firecrawl.dev/fc-7df07f5c3f5544a2b31375f2a23c1b10/v2/mcp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        240
+      ],
+      "id": "7ccb1520-ccbb-460a-85d5-4766198b5281",
+      "name": "MCP Client"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "kurokchris.app.n8n.cloud",
+            "user-agent": "Python-urllib/3.14",
+            "content-length": "236",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "102.88.115.44",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "NG",
+            "cf-ray": "a0facd49bbbd779c-LHR",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "102.88.115.44, 172.64.192.201",
+            "x-forwarded-host": "kurokchris.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-swc-30-667dc7df-g6qlp",
+            "x-is-trusted": "yes",
+            "x-real-ip": "102.88.115.44"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "job_title": "UI/UX Designer",
+            "location_focus": "Remote Global",
+            "experience_level": "Any",
+            "tech_stack": "Figma, Adobe studio",
+            "industry_preference": "Any",
+            "exclude_industry": "",
+            "job_boards": [
+              "Remotive",
+              "Ashby"
+            ],
+            "employment_type": "Contract"
+          },
+          "webhookUrl": "https://kurokchris.app.n8n.cloud/webhook/fp2",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "Build Search Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Search Prompt": {
+      "main": [
+        [
+          {
+            "node": "Job Search Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Search Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Companies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Companies": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Job Search Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "Job Search Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ae5d9e1b-02e9-48d2-bf30-24f9683bb127",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e0bbdd92f23ac577187ad4476fb62e9866232d23efadd5f7ec227b828093c10"
+  },
+  "nodeGroups": [],
+  "id": "qWEdeA0t6L1SU0uq",
+  "tags": []
+}
