@@ -1,0 +1,1344 @@
+{
+  "name": "AI POOWERED SUPPORT AGENT",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "light-delieveries-bot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -960,
+        -816
+      ],
+      "id": "ce2daa52-abdf-450d-9cfe-ad5600df58c7",
+      "name": "Webhook",
+      "webhookId": "2784bea0-bc2e-49ee-9427-cfc12498a84e"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -720
+      ],
+      "id": "09d9cd89-a75e-4618-bca9-6d8da0cead06",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "927de2c8-cadb-4ec3-9159-7a0eb98b73dc",
+              "leftValue": "={{ $('Webhook').item.json.body.data.body }}",
+              "rightValue": false,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -288,
+        -816
+      ],
+      "id": "739385cb-618e-452b-a585-cb2b9012aad1",
+      "name": "if text is not empty",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "done",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -736,
+        -816
+      ],
+      "id": "aef8ab8f-6607-4627-9f9c-20e2144b160e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eb198c6f-e115-491e-9eab-bf784928dc97",
+              "name": "customerPhone",
+              "value": "={{ $json.body.data.to.replace('@c.us', '') }}",
+              "type": "string"
+            },
+            {
+              "id": "d296f076-d10b-4b51-a9ca-cfe8ca6a63fe",
+              "name": "=customerMessage",
+              "value": "={{ $json.body.data.body.replace(/[\\n\\r\\t]/g, ' ').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "3a0ef3ee-0fd5-4ae3-939a-eca6fc249be2",
+              "name": "=messageId",
+              "value": "={{ $json.body.data.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        -816
+      ],
+      "id": "77495705-2114-45c9-b326-58f34488ab95",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "198fa146-d806-4339-ae55-14a05dae6001",
+              "name": "systemPrompt",
+              "value": "=\"You are a customer support agent for Light Deliveries, a logistics company in Benin City, Nigeria. Answer ONLY using the context below. If you cannot answer confidently from the context, respond with exactly: HANDOFF_NEEDED  \nContext: {{ $json.matches[0].metadata.text }} {{ $json.matches[1].metadata.text }} {{ $json.matches[2].metadata.text }}  \nCustomer question: {{ $('Edit Fields').item.json.customerMessage }}\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -912
+      ],
+      "id": "d255aac1-3605-4e00-b932-6bf8ceed5ea4",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ $json.systemPrompt }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        -912
+      ],
+      "id": "09318b06-c1e2-43c7-8a70-297818ed66a0",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "m7ZIxzWXVoi63KZZ",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4981d9c5-0ced-4971-9b27-9242080e9970",
+              "leftValue": "={{ $json.output[0].content[0].text }}",
+              "rightValue": "HANDOFF_NEEDED",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        960,
+        -912
+      ],
+      "id": "8535e8ab-bfe3-42e0-b78b-31a1c27c428e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app16bd5gQPMmXO33",
+          "mode": "list",
+          "cachedResultName": "Light Delieveries",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblpkRFevyqk7kENz",
+          "mode": "list",
+          "cachedResultName": "Answered Conversations",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33/tblpkRFevyqk7kENz"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Whatsapp Number": "={{ $('Edit Fields').item.json.customerPhone }}",
+            "Question Asked": "={{ $('Edit Fields').item.json.customerMessage }}",
+            "Answer Given by Bot": "={{ $json.output[0].content[0].text }}",
+            "Timestamp": "={{ $now }}",
+            "Status": "Answered"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name(if provided)",
+              "displayName": "Customer Name(if provided)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Whatsapp Number",
+              "displayName": "Whatsapp Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Question Asked",
+              "displayName": "Question Asked",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Answer Given by Bot",
+              "displayName": "Answer Given by Bot",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        -816
+      ],
+      "id": "2444639c-ac83-4790-badd-f0d3dcb6b20d",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat?token=gaby7850wyd0nhg6",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Edit Fields').item.json.customerPhone }}\",\n  \"body\": \"{{ $('Message a model').item.json.output[0].content[0].text }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1408,
+        -816
+      ],
+      "id": "a93e7ace-1aeb-49a7-b5dc-4cf8342eef73",
+      "name": "Send response to client"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=AIzaSyBYGB3W8_ZQvgTvrsDWF2z9dHYdrVvbCXk",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [{ \"text\": \"{{ $json.customerMessage }}\" }]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -64,
+        -912
+      ],
+      "id": "e4c62b5b-b2ed-4afd-a0ec-714d9e4a2556",
+      "name": "Embeddings"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://lightlogistics-kb-o3ln3yo.svc.aped-4627-b74a.pinecone.io/query",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "pcsk_4VjRr3_H8Ux2afCa9qY79sKyWFTBxUya1dcpjyT6aPGfRbdFfuqa5WixwWKK6C4L665Rue"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application?json",
+        "body": "={{ JSON.stringify({ \"vector\": $json.embedding.values, \"topK\": 3, \"includeMetadata\": true }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        160,
+        -912
+      ],
+      "id": "818b9591-afb9-4cbb-8d1f-0e8570658d04",
+      "name": "Query pinecone"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat?token=gaby7850wyd0nhg6",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Edit Fields').item.json.customerPhone }}\",\n  \"body\": \"I don't have enough information to answer this right now. I'm connecting you to one of our agents. Please hold on.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1184,
+        -1008
+      ],
+      "id": "aeefd817-fa12-451e-96c5-d6dadfda2a83",
+      "name": "Send response to client(Hand off begins)"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app16bd5gQPMmXO33",
+          "mode": "list",
+          "cachedResultName": "Light Delieveries",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl96pURg2XY2IDOh",
+          "mode": "list",
+          "cachedResultName": "Escalated Questions",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33/tbl96pURg2XY2IDOh"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Whatsapp Number": "={{ $('Edit Fields').item.json.customerPhone }}",
+            "Question Asked": "={{ $('Edit Fields').item.json.customerMessage }}",
+            "Status": "Pending- Awaiting Processing"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name(If provided)",
+              "displayName": "Customer Name(If provided)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Whatsapp Number",
+              "displayName": "Whatsapp Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Question Asked",
+              "displayName": "Question Asked",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reason for Escalation",
+              "displayName": "Reason for Escalation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending- Awaiting Processing",
+                  "value": "Pending- Awaiting Processing"
+                },
+                {
+                  "name": "Claimed",
+                  "value": "Claimed"
+                },
+                {
+                  "name": "Form Submitted",
+                  "value": "Form Submitted"
+                },
+                {
+                  "name": "Declined Handoff",
+                  "value": "Declined Handoff"
+                },
+                {
+                  "name": "Follow up Required",
+                  "value": "Follow up Required"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -1008
+      ],
+      "id": "655d4d07-3e78-4dc8-a0f2-46cc48a6558b",
+      "name": "Create a record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat?token=gaby7850wyd0nhg6",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \"to\": \"2347081631744\", \"body\": \"New escalation from \" + $('Edit Fields').item.json.customerPhone + \". Question: \" + $('Edit Fields').item.json.customerMessage + \". Update Airtable status to Claimed to take this conversation.\" }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1632,
+        -1008
+      ],
+      "id": "37779498-f9c9-4ab1-a982-9dc36b443b6f",
+      "name": "Notify agent"
+    },
+    {
+      "parameters": {
+        "amount": 180
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1856,
+        -1008
+      ],
+      "id": "eb948262-81c9-4a9f-800e-2b84547ba00d",
+      "name": "Wait",
+      "webhookId": "ab40fb33-1680-47ba-8df0-69cf2b8b5fd6"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app16bd5gQPMmXO33",
+          "mode": "list",
+          "cachedResultName": "Light Delieveries",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl96pURg2XY2IDOh",
+          "mode": "list",
+          "cachedResultName": "Escalated Questions",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33/tbl96pURg2XY2IDOh"
+        },
+        "filterByFormula": "={Whatsapp Number} = {{ $('Edit Fields').item.json.customerPhone }}",
+        "returnAll": false,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Whatsapp Number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        -1008
+      ],
+      "id": "813b4cb9-6ab2-4cf1-9b29-ddb88c17d3b1",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "47eabf7a-9a6c-4070-b258-004d832c1e4d",
+              "leftValue": "={{ $json.fields.Status }}",
+              "rightValue": "Pending- Awaiting Processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2304,
+        -1008
+      ],
+      "id": "4ffbb001-7aa3-431d-afca-596606a49495",
+      "name": "If awaiting-processing"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2528,
+        -912
+      ],
+      "id": "435fba83-677b-4d32-bf4b-f5cb82084b1d",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "formId": "ZjDqde"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -240
+      ],
+      "id": "3db2ccc7-d916-486d-a9e8-0574582574fb",
+      "name": "Tally Trigger",
+      "webhookId": "21cfd5de-9d15-4cf2-ab78-58794ae7764f",
+      "credentials": {
+        "tallyApi": {
+          "id": "NPCezCaK9kuFz3nL",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app16bd5gQPMmXO33",
+          "mode": "list",
+          "cachedResultName": "Light Delieveries",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl96pURg2XY2IDOh",
+          "mode": "list",
+          "cachedResultName": "Escalated Questions",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33/tbl96pURg2XY2IDOh"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Whatsapp Number": "2349033243118",
+            "Status": "Form Submitted"
+          },
+          "matchingColumns": [
+            "Whatsapp Number"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name(If provided)",
+              "displayName": "Customer Name(If provided)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Whatsapp Number",
+              "displayName": "Whatsapp Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Question Asked",
+              "displayName": "Question Asked",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reason for Escalation",
+              "displayName": "Reason for Escalation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending- Awaiting Processing",
+                  "value": "Pending- Awaiting Processing"
+                },
+                {
+                  "name": "Claimed",
+                  "value": "Claimed"
+                },
+                {
+                  "name": "Form Submitted",
+                  "value": "Form Submitted"
+                },
+                {
+                  "name": "Declined Handoff",
+                  "value": "Declined Handoff"
+                },
+                {
+                  "name": "Follow up Required",
+                  "value": "Follow up Required"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2752,
+        -1104
+      ],
+      "id": "9392220b-7d36-4f4d-a851-bb4badb9adfa",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat?token=gaby7850wyd0nhg6",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Edit Fields').item.json.customerPhone }}\",\n  \"body\": \"We're sorry for the wait. All of our agents are currently busy. Please fill in this short form and a team member will get back to you as soon as possible: https://tally.so/r/ZjDqde\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2528,
+        -1104
+      ],
+      "id": "f13276cf-ee97-4369-bc67-fbe765978967",
+      "name": "Send form link"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat?token=gaby7850wyd0nhg6",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Edit Fields').item.json.customerPhone }}\",\n  \"body\": \"Thank you! Your request has been logged and a member of our team will be in touch with you shortly. We appreciate your patience.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -352,
+        -240
+      ],
+      "id": "39181b1b-c894-4be1-82c3-861e661eb7bb",
+      "name": "Form response received"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app16bd5gQPMmXO33",
+          "mode": "list",
+          "cachedResultName": "Light Delieveries",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl96pURg2XY2IDOh",
+          "mode": "list",
+          "cachedResultName": "Escalated Questions",
+          "cachedResultUrl": "https://airtable.com/app16bd5gQPMmXO33/tbl96pURg2XY2IDOh"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Whatsapp Number": "={{ $json.question_xZGZjE.value }}",
+            "Status": "Follow up Required"
+          },
+          "matchingColumns": [
+            "Whatsapp Number"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name(If provided)",
+              "displayName": "Customer Name(If provided)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Whatsapp Number",
+              "displayName": "Whatsapp Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Question Asked",
+              "displayName": "Question Asked",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reason for Escalation",
+              "displayName": "Reason for Escalation",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending- Awaiting Processing",
+                  "value": "Pending- Awaiting Processing"
+                },
+                {
+                  "name": "Claimed",
+                  "value": "Claimed"
+                },
+                {
+                  "name": "Form Submitted",
+                  "value": "Form Submitted"
+                },
+                {
+                  "name": "Declined Handoff",
+                  "value": "Declined Handoff"
+                },
+                {
+                  "name": "Follow up Required",
+                  "value": "Follow up Required"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        -240
+      ],
+      "id": "c536df24-6a2a-433f-bac0-cd2d10e49db7",
+      "name": "Update record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "kurokchris.app.n8n.cloud",
+            "user-agent": "axios/1.16.1",
+            "content-length": "570",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "65.109.60.110",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "FI",
+            "cf-ray": "a10da80589296565-AMS",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "65.109.60.110, 172.70.46.213",
+            "x-forwarded-host": "kurokchris.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-swc-30-667dc7df-mxx4c",
+            "x-is-trusted": "yes",
+            "x-real-ip": "65.109.60.110"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event_type": "message_create",
+            "instanceId": "179664",
+            "id": "",
+            "referenceId": "",
+            "hash": "2aaf04187052bc6b90cf7e7dbe711a26",
+            "data": {
+              "id": "true_18387577110625@lid_ACCCE7EA8DF529E0B63891C1922FB460",
+              "sid": "ACCCE7EA8DF529E0B63891C1922FB460",
+              "from": "2347081631744@c.us",
+              "to": "2349033243118@c.us",
+              "author": "2347081631744@c.us",
+              "pushname": "I🔥",
+              "ack": "server",
+              "type": "chat",
+              "body": "I want to make a complaint about a missing package from last week",
+              "media": "",
+              "fromMe": true,
+              "self": false,
+              "isForwarded": false,
+              "isMentioned": false,
+              "quotedMsg": {},
+              "mentionedIds": [],
+              "time": 1782324276
+            }
+          },
+          "webhookUrl": "https://kurokchris.app.n8n.cloud/webhook/light-delieveries-bot",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if text is not empty": {
+      "main": [
+        [
+          {
+            "node": "Embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "if text is not empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send response to client(Hand off begins)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send response to client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings": {
+      "main": [
+        [
+          {
+            "node": "Query pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query pinecone": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send response to client(Hand off begins)": {
+      "main": [
+        [
+          {
+            "node": "Create a record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record1": {
+      "main": [
+        [
+          {
+            "node": "Notify agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify agent": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "If awaiting-processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If awaiting-processing": {
+      "main": [
+        [
+          {
+            "node": "Send form link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send form link": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        []
+      ]
+    },
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "Update record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record1": {
+      "main": [
+        [
+          {
+            "node": "Form response received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "524efe09-1106-4761-986a-fad92a58a18c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e0bbdd92f23ac577187ad4476fb62e9866232d23efadd5f7ec227b828093c10"
+  },
+  "nodeGroups": [],
+  "id": "mR5715XFATAXaw8v",
+  "tags": []
+}
