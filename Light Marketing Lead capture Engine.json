@@ -1,0 +1,349 @@
+{
+  "name": "Light Marketing Lead capture Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "aQylLy"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0d0a4f44-b858-4e46-b3b6-7330d89b114c",
+      "name": "Tally Trigger",
+      "webhookId": "ff350f92-7113-4afc-b689-0f31741cb837",
+      "credentials": {
+        "tallyApi": {
+          "id": "NPCezCaK9kuFz3nL",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "925bf50e-2938-4425-8d92-e5f3e6597d6f",
+              "name": "Full Name",
+              "value": "={{ $json.question_4LqQod.value }}",
+              "type": "string"
+            },
+            {
+              "id": "24fab3b0-bb4a-43ae-be11-88287448b0a6",
+              "name": "Email Address",
+              "value": "={{ $json.question_jLpZ7Y.value }}",
+              "type": "string"
+            },
+            {
+              "id": "07722a38-f350-43e0-9329-da83559cb88f",
+              "name": "Company Name",
+              "value": "={{ $json.question_2LZXJg.value }}",
+              "type": "string"
+            },
+            {
+              "id": "e813eac6-2019-475c-bb06-ca22680a3e6f",
+              "name": "Budget Range",
+              "value": "={{ $json.question_x2orPE.value }}",
+              "type": "string"
+            },
+            {
+              "id": "85e67f23-25f2-40ca-a66e-4048dadf0c0c",
+              "name": "Question Asked",
+              "value": "={{ $json.question_Zlg8zA.value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e00ca8b1-9249-4fda-93b7-8b7e21fd0e8b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Name: {{ $json['Full Name'] }}\nEmail: {{ $json['Email Address'] }}\nCompany: {{ $json['Company Name'] }}\nBudget: {{ $json['Budget Range'] }}\nMessage:{{ $json['Question Asked'] }}\nSummarize this lead in one line."
+            },
+            {
+              "role": "system",
+              "content": "You are a lead-summarization assistant for a marketing agency. You'll receive a raw lead submission and must produce a single-line summary.\n\nRules:\n- Output exactly one line, no more than 20 words\n- Capture what the lead wants (the service or problem) and any timeline or urgency mentioned\n- Include the budget range if one is provided\n- Format: \"Wants [need], [budget]. [timeline if mentioned]\"\n- No greetings, no explanations, no quotation marks around the output\n- If timeline isn't mentioned, drop that part entirely, don't say \"no timeline given\""
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "0c17374d-1bc5-4010-ad72-6d63ef8398ed",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "m7ZIxzWXVoi63KZZ",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "imoleayoakogun@gmail.com",
+        "subject": "=New Lead: {{ $json['Company Name'] }} - {{ $json['Budget Range'] }} ",
+        "message": "=<div style=\"background-color: #ffffff; padding: 20px;\">\n  <img src=\"https://i.ibb.co/B5VM1HpY/light-marketing-logo-white-bg.png\" alt=\"Light Marketing\" style=\"height: 32px;\">\n</div>\n  \n  <hr style=\"border: none; border-top: 1px solid #eee; margin-bottom: 24px;\">\n  \n  <h2 style=\"color: #111; margin-bottom: 16px;\">New Lead: {{ $json['Company Name'] }} </h2>\n  \n  <p style=\"color: #555; font-size: 15px;\">Summary</p>\n  <p style=\"font-size: 18px; font-weight: bold; color: #2563eb; margin-top: 4px;\">\n   {{ $json['AI Summary'] }}\n  </p>\n\n  <table style=\"margin-top: 24px; font-size: 14px; color: #333;\">\n    <tr><td style=\"padding: 4px 12px 4px 0; color: #888;\">Name</td><td>{{ $json['Full Name'] }}</td></tr>\n    <tr><td style=\"padding: 4px 12px 4px 0; color: #888;\">Email</td><td>{{ $json['Email Address'] }}</td></tr>\n    <tr><td style=\"padding: 4px 12px 4px 0; color: #888;\">Company</td><td>{{ $json['Company Name'] }}</td></tr>\n    <tr><td style=\"padding: 4px 12px 4px 0; color: #888;\">Budget</td><td>{{ $json['Budget Range'] }}</td></tr>\n  </table>\n\n  <p style=\"margin-top: 24px; color: #555; font-size: 14px;\">Full message</p>\n  <p style=\"color: #333; font-size: 14px; line-height: 1.5;\">\n    {{ $json['Full Message'] }}\n  </p>\n\n  <hr style=\"border: none; border-top: 1px solid #eee; margin-top: 24px;\">\n  <p style=\"color: #999; font-size: 12px; margin-top: 12px;\">\n    Logged at {{ $json.Timestamp }}\n  </p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "6e1d4862-b1eb-460d-bce2-c547a27fd6ae",
+      "name": "Alert sales team",
+      "webhookId": "f2965151-57fe-4eb8-8c5e-d6e0f55b3895",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XiMvRytmANwTDT67",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AZdiXluaQ9tDpzVvdQ0P2h5cJjzZGVRhcUuMyIpz33g",
+          "mode": "list",
+          "cachedResultName": "Light Marketing Leads sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AZdiXluaQ9tDpzVvdQ0P2h5cJjzZGVRhcUuMyIpz33g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AZdiXluaQ9tDpzVvdQ0P2h5cJjzZGVRhcUuMyIpz33g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Full Name": "={{ $('Edit Fields').item.json['Full Name'] }}",
+            "Email Address": "={{ $('Edit Fields').item.json['Email Address'] }}",
+            "Company Name": "={{ $('Edit Fields').item.json['Company Name'] }}",
+            "Budget Range": "={{ $('Edit Fields').item.json['Budget Range'] }}",
+            "Full Message": "={{ $('Edit Fields').item.json['Question Asked'] }}",
+            "AI Summary": "={{ $json.output[0].content[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget Range",
+              "displayName": "Budget Range",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Message",
+              "displayName": "Full Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "409cc44a-46aa-4837-95ce-36265d2fc8e1",
+      "name": "Data stored in leads sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NUQsjxgjbOjRAA9j",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Tally Trigger": [
+      {
+        "json": {
+          "id": "dbjRojr",
+          "formId": "aQylLy",
+          "formName": "Light Marketing ",
+          "respondentId": "VLDQ98v",
+          "createdAt": "2026-06-30T14:19:28.000Z",
+          "submissionPdfUrl": "https://api.tally.so/forms/aQylLy/submissions/dbjRojr/pdf?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJkYmpSb2pyIiwiZm9ybUlkIjoiYVF5bEx5IiwiaWF0IjoxNzgyODI5MTY5fQ.aNlesXf_SnjwttYJooS6atCD5YGoku5JHDHpmFURUtA&signature=a0289bc55ddf092ac26203759dcb06f628e958a38f4f23b9b22b5c3eaf8b9b5d",
+          "submissionPreviewUrl": "https://tally.so/forms/aQylLy/submissions/dbjRojr/preview?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJkYmpSb2pyIiwiZm9ybUlkIjoiYVF5bEx5IiwiaWF0IjoxNzgyODI5MTY5fQ.aNlesXf_SnjwttYJooS6atCD5YGoku5JHDHpmFURUtA&signature=a0289bc55ddf092ac26203759dcb06f628e958a38f4f23b9b22b5c3eaf8b9b5d",
+          "question_4LqQod": {
+            "label": "Full Name",
+            "value": "Tunde Okafor",
+            "type": "INPUT_TEXT"
+          },
+          "question_jLpZ7Y": {
+            "label": "Email Address",
+            "value": "tunde@brightpathng.com",
+            "type": "INPUT_EMAIL"
+          },
+          "question_2LZXJg": {
+            "label": "Company Name",
+            "value": "BrightPath Logistics",
+            "type": "INPUT_TEXT"
+          },
+          "question_x2orPE": {
+            "label": "Budget Range",
+            "value": "$1001-$3000",
+            "type": "DROPDOWN"
+          },
+          "question_Zlg8zA": {
+            "label": "What do you need help with?",
+            "value": "Our cost per lead on Facebook and Instagram has doubled this quarter and we don't know why. Need an audit and the targeting fixed, ideally starting within two weeks.",
+            "type": "TEXTAREA"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Data stored in leads sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data stored in leads sheet": {
+      "main": [
+        [
+          {
+            "node": "Alert sales team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "945c9b5b-fb18-4c53-9d5d-b37a3693db18",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e0bbdd92f23ac577187ad4476fb62e9866232d23efadd5f7ec227b828093c10"
+  },
+  "nodeGroups": [],
+  "id": "GS2hX9ICFqxgMl2g",
+  "tags": []
+}
