@@ -1,0 +1,213 @@
+{
+  "name": "Registration Confirmation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "appwlcXVfvtUeZ4C2",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appwlcXVfvtUeZ4C2/tblwyUk32PhwjBsxf/viwMS7Mvxza2l82nN",
+          "mode": "url"
+        },
+        "triggerField": "Registration Date",
+        "additionalFields": {}
+      },
+      "id": "ed702013-0dca-40a8-bbe5-d999f44cfafa",
+      "name": "Airtable Trigger - New Registration",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        128
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appwlcXVfvtUeZ4C2",
+          "mode": "list",
+          "cachedResultName": "Light EventHub",
+          "cachedResultUrl": "https://airtable.com/appwlcXVfvtUeZ4C2"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwyUk32PhwjBsxf",
+          "mode": "list",
+          "cachedResultName": "Registration",
+          "cachedResultUrl": "https://airtable.com/appwlcXVfvtUeZ4C2/tblwyUk32PhwjBsxf"
+        },
+        "id": "={{ $json.fields.Event[0] }}",
+        "options": {}
+      },
+      "id": "4f027337-0604-48c9-9b70-bf4ff421923f",
+      "name": "Get Event Details",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        128
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "LbBkyIQuaYKBlx4p",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1c11111-1111-1111-1111-111111111111",
+              "leftValue": "={{ $('Airtable Trigger - New Registration').item.json.fields.Status }}",
+              "rightValue": "Confirmed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2906b7ec-b4a8-40c7-b881-8cad670278d6",
+      "name": "IF Status = Confirmed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Airtable Trigger - New Registration').item.json.fields.Email }}",
+        "subject": "=You're have been confirmed for {{ $json.Name }}",
+        "message": "=p>Hi {{ $('Airtable Trigger - New Registration').item.json.fields['Attendee Name'] }},</p><p>Great news — your registration for <strong>{{ $json['Name'] }}</strong> is <strong>confirmed</strong>!</p><p><strong>Event Details:</strong><br>Date: {{ $json['Date'] }}<br>Location: {{ $json['Location'] }}</p><p>We look forward to seeing you there!</p><p>Best,<br>The EventHub Team</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        48
+      ],
+      "id": "30785869-6e85-46a4-b190-9aef3ec86a8b",
+      "name": "Send confirmation Email",
+      "webhookId": "a0c4d6ed-f814-4cfc-8f21-fa1892b9ed8e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XiMvRytmANwTDT67",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Airtable Trigger - New Registration').item.json.fields.Email }}",
+        "subject": "=You're on the waitlist for {{ $json.Name }}",
+        "message": "=<p>Hi {{ $('Airtable Trigger - New Registration').item.json.fields['Attendee Name'] }},</p><p>Thanks for registering for <strong>{{ $json.Name }}</strong>. The event is currently at full capacity, so you've been added to the <strong>waitlist</strong>.</p><p><strong>Event Details:</strong><br>Date: {{ $json['Date'] }}<br>Location: {{ $json['Location'] }}</p><p>We'll notify you immediately if a spot opens up.</p><p>Best,<br>The EventHub Team</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        256
+      ],
+      "id": "8121a2f2-0bd7-4f30-8d39-5127675b5ef3",
+      "name": "Send waitlist email",
+      "webhookId": "a0c4d6ed-f814-4cfc-8f21-fa1892b9ed8e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XiMvRytmANwTDT67",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Airtable Trigger - New Registration": {
+      "main": [
+        [
+          {
+            "node": "Get Event Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Event Details": {
+      "main": [
+        [
+          {
+            "node": "IF Status = Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Status = Confirmed": {
+      "main": [
+        [
+          {
+            "node": "Send confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send waitlist email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "71910870-9a7c-4d2b-9480-3001afa7a5cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e0bbdd92f23ac577187ad4476fb62e9866232d23efadd5f7ec227b828093c10"
+  },
+  "nodeGroups": [],
+  "id": "TL57JyxvvnDZwaYD",
+  "tags": []
+}

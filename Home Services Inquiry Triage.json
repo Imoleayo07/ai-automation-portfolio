@@ -1,0 +1,1124 @@
+{
+  "name": "Home Services Inquiry Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "id": "d2d4c894-4084-4325-a758-0003c7eebec2",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inquiry-form",
+        "options": {}
+      },
+      "id": "887b65c8-8515-4b1e-b8f7-71174cb88d19",
+      "name": "Form Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        192
+      ],
+      "webhookId": "04c87eec-5798-4c45-9e07-4bad6a24e0cd"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "source",
+              "value": "email",
+              "type": "string",
+              "id": "97c76537-d073-400d-a85a-495b62c39e52"
+            },
+            {
+              "name": "sender",
+              "value": "=Tunde Adeyemi",
+              "type": "string",
+              "id": "d45b4b43-d150-43d0-8129-2d8d2459b5f1"
+            },
+            {
+              "name": "message",
+              "value": "=Burst pipe, need someone urgently,\nHi, I woke up this morning to water pooling under my kitchen sink. Looks like a pipe burst overnight. I've shut off the main valve but I need this looked at today if at all possible. Also wanted to ask, do you charge extra for same day emergency calls?",
+              "type": "string",
+              "id": "a63ffeff-1771-4755-9111-6d11e211b7f2"
+            },
+            {
+              "name": "receivedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string",
+              "id": "30def0d1-07de-45ce-8928-e61a5c489699"
+            },
+            {
+              "id": "5e30647c-3232-48b7-b40f-fb271f22bafe",
+              "name": "sender_mail",
+              "value": "tunde.adeyemi@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "884538b8-eaab-4b2f-ac85-0403f3a3195e",
+      "name": "Normalize Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "source",
+              "value": "form",
+              "type": "string",
+              "id": "849615b8-bd2b-42c8-a4f3-6a049d96d339"
+            },
+            {
+              "name": "sender_name",
+              "value": "={{ $json.body.data.fields[0].value }}",
+              "type": "string",
+              "id": "38fc08db-3dd9-4920-b09d-0c3719753790"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.body.data.fields[4].value }}",
+              "type": "string",
+              "id": "2aaa6b67-59d6-4205-a4e7-0440e1b8b58b"
+            },
+            {
+              "name": "receivedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string",
+              "id": "7b777ca9-8f84-4eb5-9270-13e3a039fb48"
+            },
+            {
+              "id": "3b8df07f-6db3-4487-94ed-790e11ae871e",
+              "name": "sender_mail",
+              "value": "={{ $json.body.data.fields[1].value }}",
+              "type": "string"
+            },
+            {
+              "id": "0f53210c-4d8e-4b88-99bc-fac3b03ac6db",
+              "name": "preferredtime/date",
+              "value": "={{ $json.body.data.fields[5].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e711ac30-00d6-4e36-bb56-2bff8279b467",
+      "name": "Normalize Form",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "email",
+              "field2": "source"
+            }
+          ]
+        },
+        "joinMode": "keepEverything",
+        "options": {}
+      },
+      "id": "08fcd852-7e4c-429d-b15e-ef9ae9c28193",
+      "name": "Merge Inputs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        192,
+        96
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"llama-3.3-70b-versatile\",\n  max_tokens: 500,\n  temperature: 0.2,\n  response_format: { type: \"json_object\" },\n  messages: [\n    {\n      role: \"system\",\n      content: \"You triage inbound customer inquiries for a home services company. Return ONLY valid JSON matching this schema: {\\\"action\\\": string, \\\"deadline\\\": string or null, \\\"preferredtime/date\\\": string or null, \\\"questions\\\": array of strings, \\\"urgent\\\": boolean, \\\"summary\\\": one line under 15 words}.\"\n    },\n    {\n      role: \"user\",\n      content: $json.message\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        96
+      ],
+      "id": "ccffcb42-cc16-49dd-9b3a-59535f4c17f5",
+      "name": "AI model",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "G98CkeVkeOuRderK",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.choices[0].message.content\nconst cleaned = raw.replace(/```json|```/g, '').trim();\n\nlet data;\ntry {\n  data = JSON.parse(cleaned);\n} catch (e) {\n  data = {\n    action: 'COULD NOT PARSE - review manually',\n    deadline: null,\n    preferred_time: null,\n    questions: [],\n    urgent: true,\n    summary: raw.slice(0, 200)\n  };\n}\n\nconst src = $('Merge Inputs').first().json;\n\nreturn [{\n  json: {\n    ...data,\n    sender: src.sender,\n    source: src.source,\n    receivedAt: src.receivedAt,\n    rawMessage: src.message\n  }\n}];"
+      },
+      "id": "b9330f13-3e68-46ac-badc-e8ae05996757",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "alert_text",
+              "value": "=={{ \n'<h2>' + ($json.urgent ? '🚨 URGENT: ' : '') + 'New Inquiry (' + $json.action + ')</h2>' +\n'<p><b>From:</b> ' + $json.sender_name + '</p>' + +\n'<p><b>Action:</b> ' + $json.action + '</p>' +\n'<p><b>Deadline:</b> ' + ($json.deadline || 'none stated') + '</p>' +\n'<p><b>Preferred time:</b> ' + ($json.preferred_time || 'not specified') + '</p>' +\n'<p><b>Open questions:</b> ' + ($json.questions.length ? $json.questions.join('; ') : 'none') + '</p>' +\n'<p><b>Summary:</b> ' + $json.summary + '</p>' +\n'<hr><p style=\"color:#888;font-size:12px;\">Original message: ' + $json.rawMessage.replace(/\\n/g, '<br>') + '</p>'\n}}",
+              "type": "string",
+              "id": "d5a0c6a5-1a9d-4479-8cd1-aeff7f350275"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "95b44795-188e-4d05-82d7-0fcbbeaa6bac",
+      "name": "Build message to CEO",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "imoleayoakogun@gmail.com",
+        "subject": "={{ ($json.urgent ? 'URGENT: ' : '') + 'Inquiry - ' + $('Parse AI Response').item.json.action}}",
+        "message": "={{ $json.alert_text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        96
+      ],
+      "id": "a0c35948-18a4-479d-9c4b-ca9a893298f1",
+      "name": "CEO new inquiry notification",
+      "webhookId": "0afcf1df-6659-48b8-8b13-52929d6c6fb9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1744,
+        96
+      ],
+      "id": "bf2bfcf5-bc5e-49ac-a3c3-00130b48985e",
+      "name": "Wait for inquiry confirmation and schedulling",
+      "webhookId": "1e049374-d2c4-4a79-a651-79fa08664336"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg",
+          "mode": "list",
+          "cachedResultName": "Light Home services appointment log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Inquiry ID",
+              "lookupValue": "={{ $json['Inquiry ID'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1968,
+        96
+      ],
+      "id": "df49b5ce-5710-44f5-87fc-cc7004494d1c",
+      "name": "Lookup status = Confirmed/Scheduled",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "waZLjfuQuS1zCOqk",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4103f807-a245-4611-a94f-79a21f364c6b",
+              "leftValue": "={{ $json['Status(Pending/Scheduled)'] }}",
+              "rightValue": "Confirmed/Scheduled",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2192,
+        96
+      ],
+      "id": "f48157ae-e72b-48ff-84a7-cfbc7ec77dad",
+      "name": "If status = Confirmed/Scheduled"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Merge Inputs').item.json.sender_mail }}",
+        "subject": "Your Inquiry has been confirmed.",
+        "message": "={{  '<p>Hi,</p>' + '<p>Your appointment is confirmed for <b>' + $('Parse AI Response').item.json.deadline + '</b>.</p>' + '<p>Job: ' + $json.Action + '</p>' + '<p>Reply to this email if anything changes on your end.</p>' + '<p>Thanks,<br>Your Home Services Team</p>' }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2416,
+        0
+      ],
+      "id": "891d61f2-4c10-4852-abcd-81dde51efd4f",
+      "name": "Send confirmation message to client",
+      "webhookId": "5ad5ceb2-364d-4577-92ee-2658892056c4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Merge Inputs').item.json.sender_mail }}",
+        "subject": "We're reviewing your appointment request",
+        "message": "=={{ \n'<p>Hi,</p>' +\n'<p>We received your request for <b>' + $json.Action + '</b> and our team is reviewing scheduling now.</p>' +\n'<p>You\\'ll hear back from us shortly with a confirmed time.</p>' +\n'<p>Thanks,<br>Your Home Services Team</p>'\n}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2416,
+        192
+      ],
+      "id": "4bae92fd-1cb7-423f-b403-2b7c69be9587",
+      "name": "Send review message to client",
+      "webhookId": "5ad5ceb2-364d-4577-92ee-2658892056c4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ca6f48de-857f-4e27-89fa-cf41dd9af375",
+              "leftValue": "={{ $('Merge Inputs').item.json.source }}",
+              "rightValue": "form",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1296,
+        96
+      ],
+      "id": "e0a193cb-697c-406f-a861-8a67b4235625",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg",
+          "mode": "list",
+          "cachedResultName": "Light Home services appointment log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Source": "={{ $('Merge Inputs').item.json.source }}",
+            "Sender": "={{ $('Normalize Email').item.json.sender }}",
+            "Action": "={{ $('Parse AI Response').item.json.action }}",
+            "Deadline": "={{ $('Parse AI Response').item.json.deadline }}",
+            "Preferred Time/Date": "={{ $('Parse AI Response').item.json['preferredtime/date'] }}",
+            "Message": "={{ $('Normalize Email').item.json.message }}",
+            "Summary": "={{ $('Parse AI Response').item.json.summary }}",
+            "Urgent(True/False)": "={{ $('Parse AI Response').item.json.urgent }}",
+            "Status(Pending/Scheduled)": "Pending",
+            "Sender_email": "={{ $('Merge Inputs').item.json.sender }}",
+            "Inquiry ID": "=inquiryId: ={{ $now.toMillis() + '-' + Math.floor(Math.random() * 1000) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender_email",
+              "displayName": "Sender_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Action",
+              "displayName": "Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Preferred Time/Date",
+              "displayName": "Preferred Time/Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgent(True/False)",
+              "displayName": "Urgent(True/False)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status(Pending/Scheduled)",
+              "displayName": "Status(Pending/Scheduled)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Inquiry ID",
+              "displayName": "Inquiry ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1536,
+        288
+      ],
+      "id": "d91f2beb-548a-4777-9bc7-efe3c838c681",
+      "name": "Logging enquiry for email",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "waZLjfuQuS1zCOqk",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg",
+          "mode": "list",
+          "cachedResultName": "Light Home services appointment log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12LB8DNMGp3NO5KRdKvE8e9lRST8X2zpvzRiLmfoSplg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "Source": "={{ $('Merge Inputs').item.json.source }}",
+            "Sender": "={{ $('Merge Inputs').item.json.sender_name }}",
+            "Sender_email": "={{ $('Merge Inputs').item.json.sender_mail }}",
+            "Preferred Time/Date": "={{ $('Merge Inputs').item.json['preferredtime/date'] }}",
+            "Message": "={{ $('Merge Inputs').item.json.message }}",
+            "Status(Pending/Scheduled)": "Pending",
+            "Inquiry ID": "=inquiryId: ={{ $now.toMillis() + '-' + Math.floor(Math.random() * 1000) }}",
+            "Deadline": "={{ $('Parse AI Response').item.json.deadline }}",
+            "Action": "={{ $('Parse AI Response').item.json.action }}",
+            "Urgent(True/False)": "={{ $('Parse AI Response').item.json.urgent }}",
+            "Summary": "={{ $('Parse AI Response').item.json.summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender_email",
+              "displayName": "Sender_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Action",
+              "displayName": "Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Preferred Time/Date",
+              "displayName": "Preferred Time/Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urgent(True/False)",
+              "displayName": "Urgent(True/False)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status(Pending/Scheduled)",
+              "displayName": "Status(Pending/Scheduled)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Inquiry ID",
+              "displayName": "Inquiry ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1520,
+        96
+      ],
+      "id": "90c3156c-93cf-4ce9-b79b-f617906e64bc",
+      "name": "Logging of inquiry for form",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "waZLjfuQuS1zCOqk",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19f3c2886f3e5ac2",
+          "threadId": "19f3c284b5c94d29",
+          "snippet": "From: tunde.adeyemi@outlook.com Subject: Burst pipe, need someone urgently Hi, I woke up this morning to water pooling under my kitchen sink. Looks like a pipe burst overnight. I&#39;ve shut off the",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 1330,
+          "historyId": "1657741",
+          "internalDate": "1783420707000",
+          "labels": [
+            {
+              "id": "SENT",
+              "name": "SENT"
+            },
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "IMPORTANT",
+              "name": "IMPORTANT"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "Subject": "",
+          "From": "Akogun Imoleayo <imoleayoakogun@gmail.com>",
+          "To": "Akogun Imoleayo <imoleayoakogun@gmail.com>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Form Webhook": [
+      {
+        "json": {
+          "headers": {
+            "x-forwarded-for": "34.96.41.105",
+            "x-forwarded-proto": "https",
+            "x-forwarded-port": "443",
+            "host": "imolee-n8n.hf.space",
+            "x-amzn-trace-id": "Root=1-6a4d0f9c-6ab0d3135acbcc87531e04fa",
+            "content-length": "2051",
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "user-agent": "Tally Webhooks",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "sentry-trace": "6ad0b7f25aca0d409d32b15a31f25fec-4256c3962a3eda04-0",
+            "baggage": "sentry-environment=production,sentry-release=09dae8c9d624006e1d4b9a3b30c17d6e41b57257,sentry-public_key=6af4b6673f1648edaa8fef3f2ca43405,sentry-trace_id=6ad0b7f25aca0d409d32b15a31f25fec,sentry-org_id=407628,sentry-sampled=false,sentry-sample_rand=0.6132635102811628,sentry-sample_rate=0",
+            "x-request-id": "75pnbe, 75pnbe",
+            "x-ip-token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpcCI6IjM0Ljk2LjQxLjEwNSIsInVzZXIiOm51bGwsInV1aWQiOm51bGwsImVycm9yIjpudWxsLCJleHAiOjE3ODM0MzUyMjR9.-hl7KyhONZROD8EJD_JFLYlE7ojLIGkRO-XFIhdm_9M",
+            "x-direct-url": "https://imolee-n8n.hf.space/--replicas/rh9x6/webhook/inquiry-form"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "eventId": "44cf51c5-ad1c-45b8-b5bc-c5ce7126eb8b",
+            "eventType": "FORM_RESPONSE",
+            "createdAt": "2026-07-07T14:39:23.967Z",
+            "data": {
+              "responseId": "bZ81q16",
+              "submissionId": "bZ81q16",
+              "respondentId": "VLDQ98v",
+              "formId": "Xxye5L",
+              "formName": "Light Home Services",
+              "createdAt": "2026-07-07T14:39:23.000Z",
+              "submissionPdfUrl": "https://api.tally.so/forms/Xxye5L/submissions/bZ81q16/pdf?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJiWjgxcTE2IiwiZm9ybUlkIjoiWHh5ZTVMIiwiaWF0IjoxNzgzNDM1MTYzfQ.iHIinfV1E1KCu0XO7OnUAzZyTBjXOK5N8XmusRdfbX0&signature=966b22e690b7e413c077057e69c3c06eacc9430c3c0583952e17cd72307a1f82",
+              "submissionPreviewUrl": "https://tally.so/forms/Xxye5L/submissions/bZ81q16/preview?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJiWjgxcTE2IiwiZm9ybUlkIjoiWHh5ZTVMIiwiaWF0IjoxNzgzNDM1MTYzfQ.iHIinfV1E1KCu0XO7OnUAzZyTBjXOK5N8XmusRdfbX0&signature=966b22e690b7e413c077057e69c3c06eacc9430c3c0583952e17cd72307a1f82",
+              "fields": [
+                {
+                  "key": "question_7o02va",
+                  "label": "Name",
+                  "type": "INPUT_TEXT",
+                  "value": "Chinedu Okafor"
+                },
+                {
+                  "key": "question_bLRxr6",
+                  "label": "Email",
+                  "type": "INPUT_EMAIL",
+                  "value": "chinedu.okafor@gmail.com"
+                },
+                {
+                  "key": "question_AxRLDy",
+                  "label": "Phone number",
+                  "type": "INPUT_PHONE_NUMBER",
+                  "value": "+2348034521190"
+                },
+                {
+                  "key": "question_BZokDe",
+                  "label": "Service type",
+                  "type": "DROPDOWN",
+                  "value": [
+                    "fb8c3ec7-dd86-4b87-9c30-e93b751a6f6f"
+                  ],
+                  "options": [
+                    {
+                      "id": "fb8c3ec7-dd86-4b87-9c30-e93b751a6f6f",
+                      "text": "HVAC"
+                    },
+                    {
+                      "id": "95b89269-dc71-472c-bbfb-df2a93a2c409",
+                      "text": "Plumbing"
+                    },
+                    {
+                      "id": "84ecb7a2-591b-4d2b-8850-a921ad1a779b",
+                      "text": "Electrical"
+                    },
+                    {
+                      "id": "a855e56b-5321-4617-8f37-0b872e9a7ae7",
+                      "text": "Lawn Care"
+                    },
+                    {
+                      "id": "f3027259-9555-4fac-aefd-bada5d22b131",
+                      "text": "Others"
+                    }
+                  ]
+                },
+                {
+                  "key": "question_k5j6Wr",
+                  "label": "Message",
+                  "type": "TEXTAREA",
+                  "value": "My AC unit is making a loud grinding noise and blowing warm air. I have guests arriving this weekend and need it fixed before then. Do you work on Fujitsu split units?"
+                },
+                {
+                  "key": "question_v46yLg",
+                  "label": "Preferred date/time",
+                  "type": "INPUT_TEXT",
+                  "value": "Wednesday or Thursday Morning"
+                }
+              ]
+            }
+          },
+          "webhookUrl": "https://imolee-n8n.hf.space/webhook/inquiry-form",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Email": {
+      "main": [
+        [
+          {
+            "node": "Merge Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Form": {
+      "main": [
+        [
+          {
+            "node": "Merge Inputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Inputs": {
+      "main": [
+        [
+          {
+            "node": "AI model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI model": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Build message to CEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build message to CEO": {
+      "main": [
+        [
+          {
+            "node": "CEO new inquiry notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CEO new inquiry notification": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for inquiry confirmation and schedulling": {
+      "main": [
+        [
+          {
+            "node": "Lookup status = Confirmed/Scheduled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup status = Confirmed/Scheduled": {
+      "main": [
+        [
+          {
+            "node": "If status = Confirmed/Scheduled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If status = Confirmed/Scheduled": {
+      "main": [
+        [
+          {
+            "node": "Send confirmation message to client",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send review message to client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Logging of inquiry for form",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Logging enquiry for email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logging enquiry for email": {
+      "main": [
+        [
+          {
+            "node": "Wait for inquiry confirmation and schedulling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logging of inquiry for form": {
+      "main": [
+        [
+          {
+            "node": "Wait for inquiry confirmation and schedulling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f2c7815f-f4f1-4296-9381-5bff0824c135",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ddcb9e07bf4a4bdddc167b805b7301100732d8192ba6b610656533c30786f4a1"
+  },
+  "nodeGroups": [],
+  "id": "hbmKwzTI6vz6kzii",
+  "tags": []
+}
