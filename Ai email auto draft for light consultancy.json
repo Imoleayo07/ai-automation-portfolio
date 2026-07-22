@@ -1,0 +1,426 @@
+{
+  "name": "Ai email auto draft for light consultancy",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "subject:\"[LC]\" "
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1440,
+        -176
+      ],
+      "id": "72b24aad-66bf-4ba7-bfe4-41871586e298",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "af31d949-8247-417d-9e5c-1fd4d7b59b27",
+              "name": "senderEmail",
+              "value": "={{ $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "646431b7-7b1e-4034-88ae-07eee9066b13",
+              "name": "subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "66d8dfc2-bb68-4b6d-b2e0-75d5d4f7846f",
+              "name": "body",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            },
+            {
+              "id": "8ec35f0b-f2a9-4e89-b082-3da3042a42ed",
+              "name": "threadID",
+              "value": "={{ $json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "935a7526-4ada-4439-9c2c-ae0e7ddff6e3",
+              "name": "messageID",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1216,
+        -176
+      ],
+      "id": "aa456c6e-b1a1-4da3-a1c8-6e838bbd2269",
+      "name": "Set vital information"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "options": {
+          "systemMessage": "You are the email assistant for Light Consultancy, an AI automation consulting business.\n\nAvailable files (return the name EXACTLY as written, or \"none\" if nothing fits):\n- \"Consulting Packages 2026.pdf\"\n\nRead the incoming email and return ONLY valid JSON in this exact shape, no markdown, no code fences:\n\n{\n  \"is_request\": true or false,\n  \"file_needed\": \"exact file name or none\",\n  \"subject\": \"a short reply subject line\",\n  \"reply_draft\": \"a short, warm reply in the sender's tone, 3-5 sentences, no sign-off\"\n}\n\nRules:\n- is_request is true only if the sender is asking for a proposal, capability deck, pricing, or consulting packages.\n- Apostrophes (') need no escaping in JSON. Only escape double quotes (\") if they appear inside a string value, using \\\".\n- Never use a backslash before an apostrophe.\n- subject should be \"Re: \" followed by the original subject line, unless that would be redundant, then just the original subject.\n- reply_draft must start with a capital letter as the first character. Never start the reply with a lowercase word.\n- reply_draft should reference what they asked for by name, e.g. \"attached is our Consulting Packages 2026 deck.\"\n- Never invent a file name that isn't in the list above."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -992,
+        -176
+      ],
+      "id": "f81b0967-5b1d-4648-8ff2-25d4ebf9ba17",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        48
+      ],
+      "id": "4d992598-13b3-4836-b8d9-456da42f3a8e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "kPyhTPX4D1rcCt1R",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grab the AI node's raw output\nconst raw = $input.first().json.message?.content \n  || $input.first().json.text \n  || $input.first().json.output;\n\nif (!raw) {\n  throw new Error('No AI response found on this item. Check the AI node output field name.');\n}\n\n// Strip markdown fences if the model added them anyway\nlet cleaned = raw.trim().replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```$/i, '').trim();\n\n// Fix invalid \\' escapes that some models add despite instructions\ncleaned = cleaned.replace(/\\\\'/g, \"'\");\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (err) {\n  throw new Error(`AI response wasn't valid JSON: ${err.message}. Raw output: ${cleaned}`);\n}\n\n// Force capitalization as a backstop, in case the model doesn't follow the rule\nlet reply = parsed.reply_draft?.trim() || '';\nif (reply) {\n  reply = reply.charAt(0).toUpperCase() + reply.slice(1);\n}\n\nreturn [{\n  json: {\n    ...$input.first().json,\n    is_request: parsed.is_request,\n    file_needed: parsed.file_needed?.trim(),\n    subject: parsed.subject?.trim(),\n    reply_draft: reply\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        -176
+      ],
+      "id": "d03f1e15-f7e0-4c3e-b5d4-1e85a27ad8c3",
+      "name": "Parse AI response"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "=name = '{{ $json.file_needed }}'",
+        "returnAll": true,
+        "filter": {
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -208,
+        -272
+      ],
+      "id": "42b7bd62-48c4-4ac7-a1d1-78ac458999c7",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "d9IVItMis6GIMTrp",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        0,
+        -272
+      ],
+      "id": "1158770b-d168-4ade-9da3-aa28ca119868",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "d9IVItMis6GIMTrp",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Parse AI response').item.json.subject }}",
+        "message": "={{ $('Parse AI response').item.json.reply_draft }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "=data"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        -272
+      ],
+      "id": "41f1298c-e131-481b-b4f2-d95561054050",
+      "name": "Create a draft",
+      "webhookId": "9da61679-340d-4df7-bac2-19c48a6a4d73",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d5cf695e-f22b-4460-b24e-c88852ea65da",
+              "leftValue": "={{ $json.is_request }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -416,
+        -176
+      ],
+      "id": "7b5483a1-d9a1-4e6e-b6b1-592056966a37",
+      "name": "If request = true"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.reply_draft }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "d18c672e-7bf0-404d-9736-80897a3ed4ac",
+      "name": "Draft for other responses",
+      "webhookId": "6e73d7a4-b115-459d-a3d7-50d6c882de49",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mGsDzhTAs7kbO7bO",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19f5b5b3bf384826",
+          "threadId": "19f5b5b3bf384826",
+          "snippet": "Do you have any case studies or past client testimonials you can share?",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 11382,
+          "historyId": "1681761",
+          "internalDate": "1783944131000",
+          "labels": [
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "CATEGORY_PERSONAL",
+              "name": "CATEGORY_PERSONAL"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "From": "Imoleayo Akogun <Akogunimoleayo@outlook.com>",
+          "To": "\"imoleayoakogun@gmail.com\" <imoleayoakogun@gmail.com>",
+          "Subject": "[LC] Case studies?"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set vital information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set vital information": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI response": {
+      "main": [
+        [
+          {
+            "node": "If request = true",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If request = true": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft for other responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Africa/Lagos",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "3eb00041-e5b0-41a9-a387-e4a2efc54839",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ddcb9e07bf4a4bdddc167b805b7301100732d8192ba6b610656533c30786f4a1"
+  },
+  "nodeGroups": [],
+  "id": "szCcXOZCzYqdOqHj",
+  "tags": []
+}

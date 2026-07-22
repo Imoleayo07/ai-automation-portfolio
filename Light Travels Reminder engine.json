@@ -1,0 +1,628 @@
+{
+  "name": "Light Travels Reminder engine",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 3,
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "id": "18734c06-133b-4c07-bd3e-baa75ae74da3",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4",
+          "mode": "list",
+          "cachedResultName": "Light Travels Trip tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "efe3ed9c-ec1d-48ad-869f-05980bf1619c",
+      "name": "Get row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        16
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "pre-trip",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7427649e-780d-4cae-b8e8-3e2b8ee63916"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Pre-trip"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "595b648a-8a46-436c-8170-4f92aaca5c4f",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "post-trip",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Post-trip"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a8297d6f-2c6c-4f0f-8288-e24a24dc4fb4",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nconst departure = new Date($json['Departure Date']);\ndeparture.setHours(0, 0, 0, 0);\n\nconst returnDate = new Date($json['Return Date']);\nreturnDate.setHours(0, 0, 0, 0);\n\nconst daysToDeparture = Math.round((departure - today) / (1000 * 60 * 60 * 24));\nconst daysSinceReturn = Math.round((today - returnDate) / (1000 * 60 * 60 * 24));\n\nconst status = $json['Status'];\n\nlet route = 'skip';\nlet message = '';\nlet newStatus = status;\n\nif (daysToDeparture <= 3 && daysToDeparture >= 0 && status !== 'Pre-trip Sent' && status !== 'Completed') {\n  route = 'pre-trip';\n  message = `Hi ${$json['Name']}, your trip is almost here! Departure is on ${$json['Departure Date']}. Here's your checklist: pack your documents, confirm your pickup time, and charge your phone. Safe travels!`;\n  newStatus = 'Pre-trip Sent';\n} else if (daysSinceReturn === 1 && status !== 'Post-trip Sent' && status !== 'Completed') {\n  route = 'post-trip';\n  message = `Welcome back, ${$json['Name']}! Hope the trip was amazing. How was it? Reply and let us know, we'd love to hear.`;\n  newStatus = 'Post-trip Sent';\n}\n\nreturn {\n  ...$json,\n  daysToDeparture,\n  daysSinceReturn,\n  route,\n  message,\n  to: $json['WhatsApp Number'],\n  newStatus,\n  row_number: $itemIndex + 2\n};"
+      },
+      "id": "b4e2913c-7b1f-47f4-8fb3-090b2d0bb02d",
+      "name": "Calculate time of departure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        16
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "gaby7850wyd0nhg6"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json['WhatsApp No'] }}"
+            },
+            {
+              "name": "body",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "92db0bb8-c4ac-4456-9ee1-d4912c9e97f4",
+      "name": "Send pretrip Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance179664/messages/chat",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "gaby7850wyd0nhg6"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json['WhatsApp No'] }}"
+            },
+            {
+              "name": "body",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9ade0870-e5c3-4856-8344-8f44cd67d361",
+      "name": "Send post trip message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "8527757187",
+        "text": "=✅ Welcome-back message sent\nCustomer: {{ $('Switch').item.json.Name }}\nWhatsApp: {{ $('Switch').item.json['WhatsApp No'] }}\nReturned: {{ $('Switch').item.json['Return Date'] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        112
+      ],
+      "id": "b9d529ca-dd9a-4cec-979d-9a25c21b9628",
+      "name": "Notify light travels of posttrip message sent",
+      "webhookId": "c15d4bed-2393-4228-902c-37c29dc4c29d",
+      "credentials": {
+        "telegramApi": {
+          "id": "gYtLq17jFENkDyYk",
+          "name": "Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8527757187",
+        "text": "=✅ Pre-trip reminder sent \nCustomer: {{ $('Switch').item.json.Name }}\nWhatsApp: {{ $('Switch').item.json['WhatsApp No'] }}\nDeparture: {{ $('Switch').item.json['Departure Date'] }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        -80
+      ],
+      "id": "b8b3be74-3046-439c-b707-824dbd91bb20",
+      "name": "Notify light travels of pretrip message sent",
+      "webhookId": "c15d4bed-2393-4228-902c-37c29dc4c29d",
+      "credentials": {
+        "telegramApi": {
+          "id": "gYtLq17jFENkDyYk",
+          "name": "Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4",
+          "mode": "list",
+          "cachedResultName": "Light Travels Trip tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Switch').item.json.row_number }}",
+            "Status": "Post-trip Sent"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "WhatsApp No",
+              "displayName": "WhatsApp No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Destination",
+              "displayName": "Destination",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Departure Date",
+              "displayName": "Departure Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        112
+      ],
+      "id": "3585fb9a-87ba-4503-9843-c2d0f50e68ad",
+      "name": "Update trip tracker",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4",
+          "mode": "list",
+          "cachedResultName": "Light Travels Trip tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qLwgLhNo9mQ4NEBquK7dMEwf4KRTsUtm22wWUAoNhc4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Switch').item.json.row_number }}",
+            "Status": "Pre-trip Sent"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "WhatsApp No",
+              "displayName": "WhatsApp No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Destination",
+              "displayName": "Destination",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Departure Date",
+              "displayName": "Departure Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        -80
+      ],
+      "id": "d9e57f0b-d14d-4c6e-b7b6-51b23116b5c7",
+      "name": "Update trip tracker staus",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7xLzsaxJa22wMuE1",
+          "name": "Akogun Imoleayo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "WHAT THIS DOES\n\nReads every trip from the sheet daily.\n\n3 days before departure → sends a WhatsApp reminder\nwith a pre-trip checklist.\n\n1 day after return → sends a WhatsApp welcome-back\nmessage asking how the trip went.\n\nThe Status column stops duplicate messages. A trip\nonly gets one message per stage, ever. Everything\nelse gets skipped that day.\n\nAfter each message sends, the CEO gets a Telegram\nnotification and the sheet updates with the new status.\n\nBuilt for: a travel agency that keeps trips in a\nspreadsheet and kept forgetting to follow up with\ncustomers.",
+        "height": 528,
+        "width": 448,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -224
+      ],
+      "id": "2b13d68f-7a52-473a-9eb6-92f4bd6e7c0a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Calculate time of departure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send pretrip Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send post trip message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate time of departure": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send pretrip Message": {
+      "main": [
+        [
+          {
+            "node": "Update trip tracker staus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send post trip message": {
+      "main": [
+        [
+          {
+            "node": "Update trip tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update trip tracker": {
+      "main": [
+        [
+          {
+            "node": "Notify light travels of posttrip message sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update trip tracker staus": {
+      "main": [
+        [
+          {
+            "node": "Notify light travels of pretrip message sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0cfdd112-01f0-4626-9f16-206da24caedf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f4827fa6cfab71f9f130b8f4afa0f8a418dea38f8515dfdc3367cdd6b96d646"
+  },
+  "nodeGroups": [],
+  "id": "abjAcuqZyQyWj7bw",
+  "tags": []
+}
