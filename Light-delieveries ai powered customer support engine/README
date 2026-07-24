@@ -1,0 +1,27 @@
+# Light Deliveries — WhatsApp Support Bot
+
+A live WhatsApp support bot built for a delivery business. Customers message the business number, get accurate answers pulled from a knowledge base, and get handed off to a human when the bot can't confidently answer.
+
+## Tools
+
+n8n Cloud, UltraMessage, Gemini (gemini-embedding-001, 3072 dimensions), Pinecone, Airtable, Tally
+
+## How it works
+
+1. A customer sends a WhatsApp message to the business number.
+2. UltraMessage forwards the message to an n8n webhook.
+3. The question is embedded with Gemini and matched against a Pinecone vector database holding the business's support content.
+4. If a confident match is found, the bot replies directly.
+5. If not, the conversation is escalated to a human and logged in Airtable, with a Tally form offered as a fallback intake for anything the flow can't handle.
+6. All conversations, answered and escalated, are logged in Airtable across separate tables for tracking.
+
+## Problems solved
+
+- **Phone number formatting:** UltraMessage sends numbers with a `@c.us` suffix that had to be stripped before matching customer records.
+- **Silent message failures:** every UltraMessage HTTP node required `JSON.stringify()` on the raw body, without it, messages would fail without any visible error.
+- **Pinecone authentication:** the API key had to be passed as a header, not a query parameter.
+- **Broken JSON payloads:** newline and tab characters in customer messages broke JSON formatting until a sanitization step was added (`.replace(/[\n\r\t]/g, ' ')`).
+
+## Status
+
+Live and handling real customer conversations.
