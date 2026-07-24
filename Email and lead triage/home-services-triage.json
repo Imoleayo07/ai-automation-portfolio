@@ -1,0 +1,153 @@
+{
+  "name": "Home Services Inquiry Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": { "item": [ { "mode": "everyMinute" } ] },
+        "simple": false,
+        "filters": {}
+      },
+      "id": "gmail-trigger",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [-200, 0],
+      "credentials": { "gmailOAuth2": { "id": "REPLACE_ME", "name": "Gmail account" } }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inquiry-form",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "form-webhook",
+      "name": "Form Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-200, 220]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "source", "value": "email", "type": "string" },
+            { "name": "sender", "value": "={{ $json.from }}", "type": "string" },
+            { "name": "message", "value": "={{ 'Subject: ' + $json.subject + '\\n\\n' + $json.text }}", "type": "string" },
+            { "name": "receivedAt", "value": "={{ $now.toISO() }}", "type": "string" }
+          ]
+        }
+      },
+      "id": "normalize-email",
+      "name": "Normalize Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [40, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "source", "value": "form", "type": "string" },
+            { "name": "sender", "value": "={{ $json.email || $json.name }}", "type": "string" },
+            { "name": "message", "value": "={{ JSON.stringify($json, null, 2) }}", "type": "string" },
+            { "name": "receivedAt", "value": "={{ $now.toISO() }}", "type": "string" }
+          ]
+        }
+      },
+      "id": "normalize-form",
+      "name": "Normalize Form",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [40, 220]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "merge-inputs",
+      "name": "Merge Inputs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [280, 110]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"claude-sonnet-4-6\",\n  max_tokens: 500,\n  system: \"You triage inbound customer inquiries for a home services company (HVAC, plumbing, electrical, lawn care). Read the message and return ONLY valid JSON, no markdown fences, no commentary, matching exactly this schema: {\\\"action\\\": string, \\\"deadline\\\": string or null, \\\"preferred_time\\\": string or null, \\\"questions\\\": array of strings, \\\"urgent\\\": boolean, \\\"summary\\\": one line under 15 words}. action is the single job that needs to be scheduled or done, in plain language (e.g. 'Schedule AC repair'). deadline is any hard date or event mentioned the job must happen before, or null if none. preferred_time is any date/time the customer requested, or null. questions is a list of anything the customer explicitly asked that needs a direct answer before or during scheduling. urgent is true only if there's a safety issue, no heat/cooling in extreme weather, a leak, or a stated deadline within 48 hours. summary is a one-line human-readable recap for a Slack channel.\",\n  messages: [{ role: \"user\", content: $json.message }]\n}) }}"
+      },
+      "id": "call-claude",
+      "name": "Extract Triage Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 110],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_ME", "name": "Anthropic API Key" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.content[0].text;\nconst cleaned = raw.replace(/```json|```/g, '').trim();\n\nlet data;\ntry {\n  data = JSON.parse(cleaned);\n} catch (e) {\n  data = {\n    action: 'COULD NOT PARSE - review manually',\n    deadline: null,\n    preferred_time: null,\n    questions: [],\n    urgent: true,\n    summary: raw.slice(0, 200)\n  };\n}\n\nconst src = $('Merge Inputs').first().json;\n\nreturn [{\n  json: {\n    ...data,\n    sender: src.sender,\n    source: src.source,\n    receivedAt: src.receivedAt,\n    rawMessage: src.message\n  }\n}];"
+      },
+      "id": "parse-json",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 110]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "slackText",
+              "value": "={{ ($json.urgent ? '🚨 *URGENT* ' : '') + '📥 New inquiry (' + $json.source + ')\\n*From:* ' + $json.sender + '\\n*Action:* ' + $json.action + '\\n*Deadline:* ' + ($json.deadline || 'none stated') + '\\n*Preferred time:* ' + ($json.preferred_time || 'not specified') + '\\n*Open questions:* ' + ($json.questions.length ? $json.questions.join('; ') : 'none') + '\\n*Summary:* ' + $json.summary }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "build-slack-text",
+      "name": "Build Slack Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1000, 110]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": { "mode": "name", "value": "inquiries" },
+        "text": "={{ $json.slackText }}",
+        "otherOptions": {}
+      },
+      "id": "post-slack",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [1240, 110],
+      "credentials": { "slackApi": { "id": "REPLACE_ME", "name": "Slack account" } }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": { "main": [ [ { "node": "Normalize Email", "type": "main", "index": 0 } ] ] },
+    "Form Webhook": { "main": [ [ { "node": "Normalize Form", "type": "main", "index": 0 } ] ] },
+    "Normalize Email": { "main": [ [ { "node": "Merge Inputs", "type": "main", "index": 0 } ] ] },
+    "Normalize Form": { "main": [ [ { "node": "Merge Inputs", "type": "main", "index": 1 } ] ] },
+    "Merge Inputs": { "main": [ [ { "node": "Extract Triage Data", "type": "main", "index": 0 } ] ] },
+    "Extract Triage Data": { "main": [ [ { "node": "Parse JSON", "type": "main", "index": 0 } ] ] },
+    "Parse JSON": { "main": [ [ { "node": "Build Slack Message", "type": "main", "index": 0 } ] ] },
+    "Build Slack Message": { "main": [ [ { "node": "Post to Slack", "type": "main", "index": 0 } ] ] }
+  }
+}
